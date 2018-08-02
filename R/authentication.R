@@ -1,6 +1,18 @@
 authenticate <- function(url, token) {
+
+  userInfo <- GET(paste0(url, "/api/userInfo"), add_headers(Authorization = token))
+
+  if(userInfo$status_code != 200) {
+    stop(paste0("Wrong user credentials. Error code = ", userInfo$status_code, " - ", content(userInfo)$message))
+  }
+
+  # Store token, url and user id in environment so it can be used by all other API calls
   set_renv("LANA_URL" = url)
   set_renv("LANA_TOKEN" = token)
+
+  userId = jsonlite::fromJSON(content(userInfo, encoding = "UTF-8", type = "text"))$id
+  set_renv("LANA_USERID" = userId)
+
 }
 
 checkAuthentication <- function() {
