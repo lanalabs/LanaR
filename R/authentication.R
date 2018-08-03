@@ -1,7 +1,11 @@
+#' @name authenticate
+#' \code a method, that authenticates the user
+
 authenticate <- function(url, token) {
 
   userInfo <- httr::GET(paste0(url, "/api/userInfo"), httr::add_headers(Authorization = token))
 
+  ## TOOo check for 404 => Wrong URL
   if(userInfo$status_code != 200) {
     stop(paste0("Wrong user credentials. Error code = ", userInfo$status_code, " - ", httr::content(userInfo)$message))
   }

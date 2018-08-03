@@ -1,3 +1,8 @@
+#' \code a method that gives the recent log files
+#' @return prints out a list of recent log files
+#' @name getLogs
+
+
 getLogs <- function() {
 
   checkAuthentication()

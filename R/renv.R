@@ -1,3 +1,5 @@
+#' @name renviron
+
 .Renviron <- function() {
   if (file.exists(".Renviron")) {
     ".Renviron"
