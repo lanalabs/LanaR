@@ -17,5 +17,6 @@ getAggregationRequestData <- function(rqBody){
 
   # Read response into data frame
   actAggrData <- fromJSON(content(aggregationRequestData, as = "text"))
-  return(actAggrData$chartValues)
+  chartValues <- plyr::rename(actAggrData$chartValues, c(".id"="action"))
+  return(chartValues)
 }
