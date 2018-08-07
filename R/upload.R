@@ -14,5 +14,13 @@ uploadWithoutCase <- function(logName, logSemantics){
 
   stopifnot(!is.null(csvId))
 
+  responseLogCreation <- POST(paste0(lanaApiUrl, "createEventLogFromCsv"),
+                              body = fromJSON(logSemantics, simplifyVector = TRUE),
+                              encode = "json",
+                              add_headers(Authorization = lanaAuthorization)
+  )
+  stopifnot(responseLogCreation$status_code == 200)
+
+  return(csvId)
 
 }
