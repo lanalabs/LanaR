@@ -1,12 +1,16 @@
-download <- function(csvUrl){
+#' @title \code Download example CSV file
+#' @description download the incident example CSV file from our homepage to experiment with Lana
+#' @name downloadIncidentExample
 
-  #csvUrl <- 'https://lana-labs.com/examples/Incident_withImpactAttributes.csv'
+downloadIncidentExample <- function(){
 
-url <- csvUrl
-filename <- substr(csvUrl, 31, 100)
-workingDirectory <- getwd()
+  csvUrl <- 'https://lana-labs.com/examples/Incident_withImpactAttributes.csv'
 
-destination <- paste0(workingDirectory,filename,".csv")
+  url <- csvUrl
+  filename <- substr(csvUrl, 31, 100)
+  workingDirectory <- getwd()
 
-download.file(csvUrl, destfile = destination)
+  destination <- paste0(workingDirectory,filename)
+
+  download.file(csvUrl, destfile = destination)
 }
