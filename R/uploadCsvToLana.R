@@ -7,9 +7,6 @@ uploadWithoutCase <- function(logName, eventSemanticsJson){
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
-  #doesn't work with
-  #lanaApiUrl <- "http://localhost:9000/api/"
-
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
 
@@ -21,5 +18,25 @@ uploadWithoutCase <- function(logName, eventSemanticsJson){
                               httr::verbose(data_out = F)
 )
 
-  stopifnot(responseLogCreation$status_code == 200)
+  if(responseLogCreation["status_code"] == 400) {
+    stop(httr::paste0("Invalid rqBody JSON " + "Statuscode: ", responseLogCreation["status_code"]))
+  }
+
+  else if(responseLogCreation["status_code"] == 403) {
+    stop(paste0("Forbidden. Statuscode: ", responseLogCreation["status_code"]))
+  }
+
+  else if(responseLogCreation["status_code"] == 404) {
+    stop(paste0("Not Found. Statuscode: ", responseLogCreation["status_code"]))
+  }
+
+  else if(responseLogCreation["status_code"] == 500) {
+    stop(paste0("Backend Error. Statuscode: ", responseLogCreation["status_code"]))
+  }
+
+  else if(responseLogCreation["status_code"] != 200){
+    stop(paste0("Unknown Error. Statuscode: ", responseLogCreation["status_code"]))
+  }
+
+
 }
