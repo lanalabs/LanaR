@@ -1,6 +1,6 @@
 checkHttpErrors <- function(response) {
 
   if(response["status_code"] != 200){
-    stop(paste0("Error: ", content(response), "(", http_status(response)$message, ")"))
+    stop(paste0(httr::content(response), " \nHTTP error details = ", httr::http_status(response)$message))
   }
 }
