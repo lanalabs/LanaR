@@ -17,13 +17,18 @@ getAggregationRequestData <- function(rqBody){
   checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
-  actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
+  if(!isEmptyLog(aggregationRequestData)) {
+    actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
 
-  chartValues <- actAggrData$chartValues
+    chartValues <- actAggrData$chartValues
 
-  if(".id" %in% colnames(chartValues)) {
-    chartValues <- plyr::rename(chartValues, c(".id"="action"))
+    if(".id" %in% colnames(chartValues)) {
+      chartValues <- plyr::rename(chartValues, c(".id"="action"))
+    }
+
+    return(chartValues)
+  } else {
+    return(NULL)
   }
 
-  return(chartValues)
 }
