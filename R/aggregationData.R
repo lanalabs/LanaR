@@ -1,4 +1,24 @@
-#' @title \code Aggregate data by different dimensions
+#' @title Build aggregation settings
+#' @description Builds the settings JSON needed for \code{\link{getAggregationRequestData}}. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
+#' @return Aggregation settings as JSON string
+#' @param xDimension, yDimension, zDimension, aggrLevel, miningRequest
+#' @name buildAggregationSettings
+buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest) {
+  paste0('
+         {
+         "yDimension": "', yDimension, '",
+         "xDimension": "', xDimension, '",
+         "zDimension": "', zDimension, '",
+         "followers": null,
+         "aggregationType": "', aggrLevel, '",
+         "maxValueAmount": 20,
+         "type": "aggregation",
+         "cache": {},
+         "miningRequest": ', miningRequest,'
+         }')
+}
+
+#' @title Aggregate data by different dimensions
 #' @description a method that gets the aggregation of the requested data. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
 #' @return total of the aggregated data
 #' @param discoveredModelData
