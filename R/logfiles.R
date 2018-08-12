@@ -1,8 +1,6 @@
-#' \code a method that gives the recent log files
-#' @return prints out a list of recent log files
+#' Get all logs
+#' @return data frame with all log files owned by or shared with the authenticated user
 #' @name getLogs
-
-
 getLogs <- function() {
 
   checkAuthentication()
@@ -10,7 +8,11 @@ getLogs <- function() {
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
 
+  logData <- httr::GET(paste0(lanaApiUrl, "/api/users/", lanaUserId, "/logs"), httr::add_headers(Authorization = lanaAuthorization))
+
+  checkHttpErrors(logData)
+
   jsonlite::fromJSON(
-    httr::content(httr::GET(paste0(lanaApiUrl, "/api/users/", lanaUserId, "/logs"), httr::add_headers(Authorization = lanaAuthorization)),  encoding = "UTF-8", type = "text")
+    httr::content(logData, encoding = "UTF-8", type = "text")
   )
 }
