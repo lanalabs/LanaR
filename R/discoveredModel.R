@@ -1,4 +1,4 @@
-#' @title \code Get discovered model data
+#' @title Get discovered model data
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
 #' @return discovered model
 #' @param rqBody - request body as JSON
@@ -22,7 +22,7 @@ getDiscoveredModel <- function(rqBody){
   return(discoveredModelData)
 }
 
-#' @title \code Get activity performance statistics
+#' @title Get activity performance statistics
 #' @description Get the activity performance statistics, which include activity durations and counts.
 #' @return activity performance statistics as data frame
 #' @param discoveredModelData - retrieved by \code{\link{getDiscoveredModel}}

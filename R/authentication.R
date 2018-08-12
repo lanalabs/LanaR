@@ -1,5 +1,5 @@
 #' @name authenticate
-#' \code a method, that authenticates the user
+#' a method, that authenticates the user
 authenticate <- function(url, token) {
 
   userInfo <- httr::GET(paste0(url, "/api/userInfo"), httr::add_headers(Authorization = token))

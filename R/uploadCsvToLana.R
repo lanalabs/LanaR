@@ -1,4 +1,4 @@
-#' @title \code Upload CSV log without case attributes
+#' @title Upload CSV log without case attributes
 #' @description Uploads a CSV log file without case attributes to LANA
 #' @param logName, logSemantics
 #' @name uploadWithoutCaseAttr
