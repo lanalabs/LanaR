@@ -1,8 +1,8 @@
 #' @title \code Upload CSV log without case attributes
 #' @description Uploads a CSV log file without case attributes to LANA
 #' @param logName, logSemantics
-#' @name uploadWithoutCase
-uploadWithoutCase <- function(logName, eventSemanticsJson) {
+#' @name uploadWithoutCaseAttr
+uploadWithoutCaseAttr <- function(logName, eventSemanticsJson) {
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
