@@ -29,7 +29,7 @@ getAggregationRequestData <- function(rqBody){
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
 
-  # Make request LANA
+  # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaAuthorization)
   )
