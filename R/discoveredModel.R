@@ -18,7 +18,7 @@ getDiscoveredModel <- function(rqBody){
 
   checkHttpErrors(discoveredModelRequestData)
 
-  discoveredModelData <-  jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text"))
+  discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
   return(discoveredModelData)
 }
 
