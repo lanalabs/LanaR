@@ -1,9 +1,9 @@
-buildMiningRequest <- function(hideActivityFilter, traceFilterSequence) {
+buildMiningRequest <- function(logId, hideActivityFilter, traceFilterSequence) {
   paste0('{
          "hideActivityFilter": ', hideActivityFilter ,',
          "includeHeader": true,
          "includeLogId": true,
-         "logId": ', logMuen, ',
+         "logId": ', logId, ',
          "edgeThreshold": 1,
          "traceFilterSequence": ', traceFilterSequence, ',
          "runConformance": false,
