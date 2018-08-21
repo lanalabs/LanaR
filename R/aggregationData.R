@@ -3,17 +3,17 @@
 #' @return Aggregation settings as JSON string
 #' @param xDimension, yDimension, zDimension, aggrLevel, miningRequest
 #' @name buildAggregationSettings
-buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest) {
+buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest, followers="null", maxValueAmount="20", type="aggregation", cache="{}") {
   paste0('
          {
          "yDimension": "', yDimension, '",
          "xDimension": "', xDimension, '",
          "zDimension": "', zDimension, '",
-         "followers": null,
+         "followers": "', followers, '",
          "aggregationType": "', aggrLevel, '",
-         "maxValueAmount": 20,
-         "type": "aggregation",
-         "cache": {},
+         "maxValueAmount": "', maxValueAmount, '",
+         "type": "', aggregation, '",
+         "cache": "', cache, '",
          "miningRequest": ', miningRequest,'
          }')
 }
@@ -22,8 +22,8 @@ buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLev
 #' @description a method that gets the aggregation of the requested data. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
 #' @return total of the aggregated data
 #' @param discoveredModelData
-#' @name getAggregationRequestData
-getAggregationRequestData <- function(rqBody){
+#' @name aggregate
+aggregate <- function(rqBody){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
