@@ -1,7 +1,7 @@
 #' @title Download example CSV file
 #' @description Download the incident example CSV file from Lana Labs' homepage
 #' @name downloadIncidentExample
-downloadIncidentExample <- function(){
+downloadExample <- function(){
 
   csvUrl <- 'https://lana-labs.com/examples/Incident_withImpactAttributes.csv'
 

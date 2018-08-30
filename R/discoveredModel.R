@@ -2,8 +2,8 @@
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
 #' @return discovered model
 #' @param rqBody - request body as JSON
-#' @name getDiscoveredModel
-getDiscoveredModel <- function(rqBody){
+#' @name discoveredModel
+discoveredModel <- function(rqBody){
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
@@ -26,8 +26,8 @@ getDiscoveredModel <- function(rqBody){
 #' @description Get the activity performance statistics, which include activity durations and counts.
 #' @return activity performance statistics as data frame
 #' @param discoveredModelData - retrieved by \code{\link{getDiscoveredModel}}
-#' @name getActivityPerformanceStatistics
-getActivityPerformanceStatistics <- function(discoveredModelData){
+#' @name activityPerformanceStatistics
+activityPerformance <- function(discoveredModelData){
 
   if(length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))

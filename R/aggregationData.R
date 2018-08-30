@@ -6,12 +6,12 @@
 buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest, followers="null", maxValueAmount="20", type="aggregation", cache="{}") {
   paste0('
          {
-         "yDimension": "', yDimension, '",
          "xDimension": "', xDimension, '",
+         "yDimension": "', yDimension, '",
          "zDimension": "', zDimension, '",
-         "followers": "', followers, '",
          "aggregationType": "', aggrLevel, '",
          "maxValueAmount": "', maxValueAmount, '",
+         "followers": "', followers, '",
          "type": "', aggregation, '",
          "cache": "', cache, '",
          "miningRequest": ', miningRequest,'
