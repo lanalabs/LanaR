@@ -1,11 +1,14 @@
-#' @title Build aggregation settings
-#' @description Builds the settings JSON needed for \code{\link{getAggregationRequestData}}. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
-#' @return Aggregation settings as JSON string
-#' @param xDimension, yDimension, zDimension, aggrLevel, miningRequest
-#' @name buildAggregationSettings
-#' #' @examples
-#' buildAggregationSettings("byTime=dayOfWeek", "frequency",  )
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}") {
+#' build aggregation settings for the API call
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1 ) {
+
+  if (zDimension != "null" ){
+    zDimension = paste0('"', zDimension, '"')
+  }
+
+  if (followers != "null" ){
+    followers = paste0('"', zDimension, '"')
+  }
+
   rqBody <- paste0('
          {
          "xDimension": "', xDimension, '",
@@ -21,18 +24,35 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="
            "logId": ', logId, ',
            "runConformance": false,
            "sort": "start",
-           "limit": 10,
-           "page": 1
+           "limit": ', limit, ',
+           "page": ', page, '
           }
          }')
 }
 
-#' @title Aggregate data by different dimensions
-#' @description a method that gets the aggregation of the requested data. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
-#' @return total of the aggregated data
-#' @param rqBody
-#' @name aggregate
-aggregate <- function(xDimension, yDimension, logName){
+#' Aggregate
+#' Aggregate data once uploaded to Lana
+#' Aggregations can be calculated by time (month, day of week, hour) or by attribute regarding the frequency, average duration, median duration and total duration. Also the aggregated data can be grouped by attributes.
+#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://api.lana-labs.com/#/routes/getAggregatedData
+#' @param logName Full name of the uploaded csv file in Lana
+#' @param xDimension Define the x dimension for the aggregation
+#' @param yDimension Define the y dimension for the aggregation
+#' @param zDimension Define the z dimension for the aggregation (optional, default = "null")
+#' @param aggrLevel Define the aggregation level (optional, default = "traces")
+#' @param followers Define followers (optional, default = "null")
+#' @param type (optional, default = "null")
+#' @param cache (optional, default = "{}")
+#' @param limit (optional, default = 10)
+#' @param page (optional, default = 1)
+#' @return Aggregated data
+#' @examples
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byAttribute=Activity", yDimension = "frequency", zDimension = "byAttribute=Stoerung vorhanden")
+
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
@@ -40,7 +60,7 @@ aggregate <- function(xDimension, yDimension, logName){
 
   logId <- chooseLog(logName)
 
-  rqBody <- buildAggregationSettings(xDimension, yDimension, logId)
+  rqBody <- buildAggregationSettings(xDimension, yDimension, logId, zDimension)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
