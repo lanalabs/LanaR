@@ -15,4 +15,15 @@ getLogs <- function() {
   jsonlite::fromJSON(
     httr::content(logData, encoding = "UTF-8", type = "text")
   )
+
+}
+
+#' Choose specific log file
+#' @name chooseLog
+#'
+chooseLog <- function(logName){
+
+  userLogs <- lanar::getLogs()
+  logId<- max(userLogs[grepl(logName, userLogs$name, fixed=T), ]$id)
+
 }

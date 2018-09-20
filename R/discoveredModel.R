@@ -24,7 +24,7 @@ discoveredModel <- function(rqBody){
 
 #' @title Get activity performance statistics
 #' @description Get the activity performance statistics, which include activity durations and counts.
-#' @return activity performance statistics as data frame
+#' @return activity performance statistics
 #' @param discoveredModelData - retrieved by \code{\link{getDiscoveredModel}}
 #' @name activityPerformanceStatistics
 activityPerformance <- function(discoveredModelData){

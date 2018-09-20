@@ -3,31 +3,44 @@
 #' @return Aggregation settings as JSON string
 #' @param xDimension, yDimension, zDimension, aggrLevel, miningRequest
 #' @name buildAggregationSettings
-buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest, followers="null", maxValueAmount="20", type="aggregation", cache="{}") {
-  paste0('
+#' #' @examples
+#' buildAggregationSettings("byTime=dayOfWeek", "frequency",  )
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}") {
+  rqBody <- paste0('
          {
          "xDimension": "', xDimension, '",
          "yDimension": "', yDimension, '",
-         "zDimension": "', zDimension, '",
+         "zDimension": ', zDimension, ',
          "aggregationType": "', aggrLevel, '",
-         "maxValueAmount": "', maxValueAmount, '",
-         "followers": "', followers, '",
-         "type": "', aggregation, '",
+         "type": "', type, '",
+         "followers": ', followers, ',
          "cache": "', cache, '",
-         "miningRequest": ', miningRequest,'
+         "miningRequest": {
+          "includeHeader": true,
+          "includeLogId": true,
+           "logId": ', logId, ',
+           "runConformance": false,
+           "sort": "start",
+           "limit": 10,
+           "page": 1
+          }
          }')
 }
 
 #' @title Aggregate data by different dimensions
 #' @description a method that gets the aggregation of the requested data. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
 #' @return total of the aggregated data
-#' @param discoveredModelData
+#' @param rqBody
 #' @name aggregate
-aggregate <- function(rqBody){
+aggregate <- function(xDimension, yDimension, logName){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
+
+  logId <- chooseLog(logName)
+
+  rqBody <- buildAggregationSettings(xDimension, yDimension, logId)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
