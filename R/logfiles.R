@@ -19,8 +19,6 @@ getLogs <- function() {
 }
 
 #' Choose specific log file
-#' @name chooseLog
-#'
 chooseLog <- function(logName){
 
   userLogs <- lanar::getLogs()

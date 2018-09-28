@@ -1,11 +1,10 @@
 Package: lanar
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Process Data from a Lana model
 Version: 0.1.0
 Author: Lana Labs GmbH
 Maintainer: Lana Labs GmbH <support@lana-labs.com>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: The lanar package let's you work with the uploaded data and the corresponding model from your Lana software. You can use this package to extract different aggregations of the data within lana as well as activity performance statisitics. Look at the examples to get an understanding of what you can do and also have a look at https://api.lana-labs.com/ for further information.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
