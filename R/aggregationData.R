@@ -1,4 +1,4 @@
-#' build aggregation settings for the API call
+# build aggregation settings for the API call
 buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1 ) {
 
   if (zDimension != "null" ){
@@ -30,7 +30,7 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="
          }')
 }
 
-#' Aggregate
+#' @title Aggregate
 #' Aggregate data once uploaded to Lana
 #' Aggregations can be calculated by time (month, day of week, hour) or by attribute regarding the frequency, average duration, median duration and total duration. Also the aggregated data can be grouped by attributes.
 #' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://api.lana-labs.com/#/routes/getAggregatedData
@@ -52,22 +52,22 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byAttribute=Activity", yDimension = "frequency", zDimension = "byAttribute=Stoerung vorhanden")
 
-aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
+aggregate <- function(logName, xDimension, yDimension, zDimension="null"){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
 
-  logId <- chooseLog(logName)
+  logId <- lanar::chooseLog(logName)
 
-  rqBody <- buildAggregationSettings(xDimension, yDimension, logId, zDimension)
+  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaAuthorization)
   )
 
-  checkHttpErrors(aggregationRequestData)
+  lanar::checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
   if(!isEmptyLog(aggregationRequestData)) {
