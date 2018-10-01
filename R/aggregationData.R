@@ -1,5 +1,5 @@
 # build aggregation settings for the API call
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1) {
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page) {
 
   if (zDimension != "null" ){
     zDimension = paste0('"', zDimension, '"')
@@ -52,7 +52,7 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byAttribute=Activity", yDimension = "frequency", zDimension = "byAttribute=Stoerung vorhanden")
 
-aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel, followers, type, cache, limit, page){
+aggregate <- function(logName, xDimension, yDimension,zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
@@ -60,7 +60,7 @@ aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLe
 
   logId <- lanar::chooseLog(logName)
 
-  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension)
+  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),

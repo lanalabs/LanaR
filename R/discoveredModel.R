@@ -24,9 +24,6 @@ buildFilterSettings <- function(logId){
           }
       ')
 }
-printThis <- function(logName){
-  print(logName)
-}
 
 #' @title Get discovered model data
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
