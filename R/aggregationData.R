@@ -1,5 +1,5 @@
 # build aggregation settings for the API call
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1 ) {
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1) {
 
   if (zDimension != "null" ){
     zDimension = paste0('"', zDimension, '"')
@@ -52,7 +52,7 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension="
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byAttribute=Activity", yDimension = "frequency", zDimension = "byAttribute=Stoerung vorhanden")
 
-aggregate <- function(logName, xDimension, yDimension, zDimension="null"){
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel, followers, type, cache, limit, page){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
