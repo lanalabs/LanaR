@@ -10,10 +10,16 @@ In order to use `lanar` you need to manually install the packages `xml2`, `plyr`
 First upload your event logs to your Lana software. Then enter the log name as a parameter to the different functions as they will use the last uploaded log of that name. Look also at the examples.
 
 ## Download Sample Event Log
-downloadExample() - downloads an example event log to your working directory
+downloads an example event log to your working directory
+
+```
+downloadExample()
+```
 
 ## A list with all your uploaded logs
+```
 getLogs()
+```
 
 | id                | owner         | name                             | date                       | timezone       |
 | -------------     | ------------- | -------------                    | -------------              | -------------  |
@@ -21,17 +27,22 @@ getLogs()
 | 547               | 34            | SalesProcess.csv                 | 2018-09-13T13:27:50.414Z   | Europe/Berlin  |
 
 ## Filter and performance / followers statistics
+```
 filter(logName)
-
-### Example
+```
+#### Example
+```
 discoveredModel("Incident_withImpactAttributes.csv")
-
+```
 ## Activity Performance Statistics
-### gives statistics about activities like minimum/maximum duration, average/median/total duration, standard deviation and frequency.
+gives statistics about activities like minimum/maximum duration, average/median/total duration, standard deviation and frequency.
+```
 activityPerformance(logName)
-
-### Example
+```
+#### Example
+```
 activityPerformance("Incident_withImpactAttributes.csv")
+```
 
 | .id                           | frequency       | totalDuration   | minDuration     | maxDuration   | avgDuration    | standardDeviation| median         |
 | -------------                 | -------------   | -------------   | -------------   | ------------- | -------------  | -------------    | -------------  |
@@ -45,23 +56,30 @@ activityPerformance("Incident_withImpactAttributes.csv")
 
 
 ## Aggregation
-### Aggregation with different dimensions for example:time, attribute, frequency, average duration, median duration, total duration.
+Aggregation with different dimensions for example:time, attribute, frequency, average duration, median duration, total duration.
+```
 aggregate(logName, xDimension, yDimension)
-
-### Example
+```
+#### Examples
+```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
+```
 
 | byTime=byMonth    | frequency     | Case Count    |
 | -------------     | ------------- | ------------- |
 | Jan 2016          | 2000          | 2000          |
 
+```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
+```
 
 | byTime=dayOfWeek  | avgDuration   | Case Count    |
 | -------------     | ------------- | ------------- |
 | Monday            | 42516060      | 2000          |
 
+```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
+```
 
 | byTime=dayOfWeek  | avgDuration   | Case Count    |
 | -------------     | ------------- | ------------- |
@@ -74,7 +92,9 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDi
 | 15                | 42516060      | 2000          |
 | 16                | 42516060      | 2000          |
 
+```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
+```
 
 | byTime=byMonth    | totalDuration | Case Count    |
 | -------------     | ------------- | ------------- |
