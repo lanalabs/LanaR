@@ -1,4 +1,4 @@
-buildFilterSettings <- function(logId){
+buildVariantFilterSettings <- function(logId, variantMin, variantMax){
     rqBody <- paste0('
           {
             "activityExclusionFilter": [],
@@ -8,9 +8,9 @@ buildFilterSettings <- function(logId){
             "edgeThreshold": 1,
             "traceFilterSequence": [
             {
-            "max": 2,
-            "min": 1,
-            "type": "variantSliderFilter"
+            "type": "variantSliderFilter",
+            "min": ', variantMin,' ,
+            "max": ', variantMax,'
             }
             ],
             "runConformance": false,
@@ -29,8 +29,8 @@ buildFilterSettings <- function(logId){
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
 #' @return discovered model
 #' @param rqBody - request body as JSON
-#' @name discoveredModel
-discoveredModel <- function(logName){
+#' @name filter
+filter <- function(logName, variantMin = 1, variantMax = 10000){
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
@@ -39,7 +39,7 @@ discoveredModel <- function(logName){
 
   logId <- lanar::chooseLog(logName)
 
-  rqBody <- lanar::buildFilterSettings(logId)
+  rqBody <- lanar::buildVariantFilterSettings(logId, variantMin, variantMax)
 
 
   discoveredModelRequestData <- httr::GET(paste0(lanaApiUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
@@ -58,7 +58,7 @@ discoveredModel <- function(logName){
 #' @name activityPerformance
 activityPerformance <- function(logName){
 
-  discoveredModelData <- discoveredModel(logName)
+  discoveredModelData <- filter(logName)
 
   if(length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))

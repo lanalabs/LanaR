@@ -50,9 +50,9 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byAttribute=Activity", yDimension = "frequency", zDimension = "byAttribute=Stoerung vorhanden")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(logName, xDimension, yDimension,zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
@@ -72,12 +72,19 @@ aggregate <- function(logName, xDimension, yDimension,zDimension="null", aggrLev
   # Read response into data frame
   if(!isEmptyLog(aggregationRequestData)) {
     actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
-
     chartValues <- actAggrData$chartValues
 
-    if(".id" %in% colnames(chartValues)) {
+   if(".id" %in% colnames(chartValues)) {
       chartValues <- plyr::rename(chartValues, c(".id"="action"))
+   }
+
+    if(ncol(chartValues) == 3){
+    names(chartValues) <- c(xDimension, yDimension,"Case Count")
     }
+
+   # if(ncol(chartValues) == 4){
+    #  names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
+    #}
 
     return(chartValues)
   } else {
