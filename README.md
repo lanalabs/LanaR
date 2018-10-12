@@ -117,5 +117,5 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 
 | byTime=byMonth    | totalDuration | Case Count    |
 | -------------     | ------------- | ------------- |
-| Jan 2016           | 85032120000   | 2000          |
+| Jan 2016           | 85032120000  | 2000          |
 
