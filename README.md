@@ -35,7 +35,7 @@ filter(logName)
 discoveredModel("Incident_withImpactAttributes.csv")
 ```
 ## Activity Performance Statistics
-gives statistics about activities like minimum/maximum duration, average/median/total duration, standard deviation and frequency.
+gives statistics about activities such as minimum/maximum duration, average/median/total duration, standard deviation and frequency.
 ```
 activityPerformance(logName)
 ```
@@ -56,18 +56,27 @@ activityPerformance("Incident_withImpactAttributes.csv")
 
 
 ## Aggregation
-Aggregation with different dimensions for example:time, attribute, frequency, average duration, median duration, total duration.
+Aggregation with different dimensions such as: time, attribute, frequency, average duration, median duration, total duration.
 ```
 aggregate(logName, xDimension, yDimension)
 ```
 #### Aggregation Options
 
-| Time Dimension         | What it does              | Aggregation Dimension     | What it does                                        |
-| -------------          | -------------             | -------------             | -------------                                       |
-| byTime=byMonth         | aggregate by month        | frequency                 | counts the cases given time dimension               |
-| byTime=dayOfWeek       | aggregate by day of week  | avgDuration               | outputs the average duration given time dimension   |
-| byTime=byHour          | aggregate by day of week  | medianDuration            | outputs the median duration given time dimension    |
-|                        |                           | totalDuration             | outputs the total duration given time dimension     |
+| Time Dimension         | what it does              |
+| -------------          | -------------             |
+| byTime=byMonth         | aggregate by month        |
+| byTime=dayOfWeek       | aggregate by day of week  |
+| byTime=byHour          | aggregate by day of week  |
+|                        |                           |
+
+
+| Aggregation Dimension     | what it does                                        |
+| -------------             | -------------                                       |
+| frequency                 | counts the cases given time dimension               |
+| avgDuration               | outputs the average duration given time dimension   |
+| medianDuration            | outputs the median duration given time dimension    |
+| totalDuration             | outputs the total duration given time dimension     |
+
 
 
 #### Examples
@@ -108,5 +117,5 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 
 | byTime=byMonth    | totalDuration | Case Count    |
 | -------------     | ------------- | ------------- |
-| Jan 201           | 85032120000   | 2000          |
+| Jan 2016           | 85032120000   | 2000          |
 
