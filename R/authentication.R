@@ -2,7 +2,7 @@
 #' a method, that authenticates the user
 authenticate <- function(url, token) {
 
-  userInfo <- httr::GET(paste0(url, "/api/userInfo"), httr::add_headers(Authorization = token))
+  userInfo <- httr::GET(paste0(url, "/api/users/by-token"), httr::add_headers(Authorization = token))
 
   ## TOOo check for 404 => Wrong URL
   if(userInfo$status_code != 200) {

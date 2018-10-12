@@ -1,50 +1,90 @@
-#' @title Build aggregation settings
-#' @description Builds the settings JSON needed for \code{\link{getAggregationRequestData}}. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
-#' @return Aggregation settings as JSON string
-#' @param xDimension, yDimension, zDimension, aggrLevel, miningRequest
-#' @name buildAggregationSettings
-buildAggregationSettings <- function(xDimension, yDimension, zDimension, aggrLevel, miningRequest) {
-  paste0('
+# build aggregation settings for the API call
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page) {
+
+  if (zDimension != "null" ){
+    zDimension = paste0('"', zDimension, '"')
+  }
+
+  if (followers != "null" ){
+    followers = paste0('"', zDimension, '"')
+  }
+
+  rqBody <- paste0('
          {
-         "yDimension": "', yDimension, '",
          "xDimension": "', xDimension, '",
-         "zDimension": "', zDimension, '",
-         "followers": null,
+         "yDimension": "', yDimension, '",
+         "zDimension": ', zDimension, ',
          "aggregationType": "', aggrLevel, '",
-         "maxValueAmount": 20,
-         "type": "aggregation",
-         "cache": {},
-         "miningRequest": ', miningRequest,'
+         "type": "', type, '",
+         "followers": ', followers, ',
+         "cache": "', cache, '",
+         "miningRequest": {
+          "includeHeader": true,
+          "includeLogId": true,
+           "logId": ', logId, ',
+           "runConformance": false,
+           "sort": "start",
+           "limit": ', limit, ',
+           "page": ', page, '
+          }
          }')
 }
 
-#' @title Aggregate data by different dimensions
-#' @description a method that gets the aggregation of the requested data. \cr See https://api.lana-labs.com/#/routes/getAggregatedData
-#' @return total of the aggregated data
-#' @param discoveredModelData
-#' @name getAggregationRequestData
-getAggregationRequestData <- function(rqBody){
+#' @title Aggregate
+#' Aggregate data once uploaded to Lana
+#' Aggregations can be calculated by time (month, day of week, hour) or by attribute regarding the frequency, average duration, median duration and total duration. Also the aggregated data can be grouped by attributes.
+#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://api.lana-labs.com/#/routes/getAggregatedData
+#' @param logName Full name of the uploaded csv file in Lana
+#' @param xDimension Define the x dimension for the aggregation
+#' @param yDimension Define the y dimension for the aggregation
+#' @param zDimension Define the z dimension for the aggregation (optional, default = "null")
+#' @param aggrLevel Define the aggregation level (optional, default = "traces")
+#' @param followers Define followers (optional, default = "null")
+#' @param type (optional, default = "null")
+#' @param cache (optional, default = "{}")
+#' @param limit (optional, default = 10)
+#' @param page (optional, default = 1)
+#' @return Aggregated data
+#' @examples
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
+#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
+
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
+
+  logId <- lanar::chooseLog(logName)
+
+  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaAuthorization)
   )
 
-  checkHttpErrors(aggregationRequestData)
+  lanar::checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
   if(!isEmptyLog(aggregationRequestData)) {
     actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
-
     chartValues <- actAggrData$chartValues
 
-    if(".id" %in% colnames(chartValues)) {
+   if(".id" %in% colnames(chartValues)) {
       chartValues <- plyr::rename(chartValues, c(".id"="action"))
+   }
+
+    if(ncol(chartValues) == 3){
+    names(chartValues) <- c(xDimension, yDimension,"Case Count")
     }
+
+   # if(ncol(chartValues) == 4){
+    #  names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
+    #}
 
     return(chartValues)
   } else {
