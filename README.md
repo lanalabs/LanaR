@@ -60,6 +60,16 @@ Aggregation with different dimensions for example:time, attribute, frequency, av
 ```
 aggregate(logName, xDimension, yDimension)
 ```
+#### Aggregation Options
+
+| Time Dimension         | What it does              | Aggregation Dimension     | What it does                                        |
+| -------------          | -------------             | -------------             | -------------                                       |
+| byTime=byMonth         | aggregate by month        | frequency                 | counts the cases given time dimension               |
+| byTime=dayOfWeek       | aggregate by day of week  | avgDuration               | outputs the average duration given time dimension   |
+| byTime=byHour          | aggregate by day of week  | medianDuration            | outputs the median duration given time dimension    |
+|                        |                           | totalDuration             | outputs the total duration given time dimension     |
+
+
 #### Examples
 ```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
@@ -81,16 +91,16 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", 
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
 ```
 
-| byTime=dayOfWeek  | avgDuration   | Case Count    |
-| -------------     | ------------- | ------------- |
-| 09                | 42516060      | 2000          |
-| 10                | 42516060      | 2000          |
-| 11                | 42516060      | 2000          |
-| 12                | 42516060      | 2000          |
-| 13                | 42516060      | 2000          |
-| 14                | 42516060      | 2000          |
-| 15                | 42516060      | 2000          |
-| 16                | 42516060      | 2000          |
+| byTime=byHour     | medianDuration   | Case Count    |
+| -------------     | -------------    | ------------- |
+| 09                | 42516060         | 2000          |
+| 10                | 42516060         | 2000          |
+| 11                | 42516060         | 2000          |
+| 12                | 42516060         | 2000          |
+| 13                | 42516060         | 2000          |
+| 14                | 42516060         | 2000          |
+| 15                | 42516060         | 2000          |
+| 16                | 42516060         | 2000          |
 
 ```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
