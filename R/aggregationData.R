@@ -1,5 +1,5 @@
 # build aggregation settings for the API call
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page) {
+buildAggregationSettings <- function(logId, xDimension, yDimension, zDimension, hideActivityFilter, aggrLevel, followers, type, cache, traceFilterSequence, limit, page) {
 
   if (zDimension != "null" ){
     zDimension = paste0('"', zDimension, '"')
@@ -19,11 +19,13 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
          "followers": ', followers, ',
          "cache": "', cache, '",
          "miningRequest": {
+          "hideActivityFilter":  ', hideActivityFilter,',
           "includeHeader": true,
           "includeLogId": true,
            "logId": ', logId, ',
            "runConformance": false,
            "sort": "start",
+           "traceFilterSequence": ', traceFilterSequence ,',
            "limit": ', limit, ',
            "page": ', page, '
           }
@@ -52,7 +54,7 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation",  hideActivityFilter = "null", cache="{}", traceFilterSequence="null", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
@@ -60,8 +62,7 @@ aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLe
 
   logId <- lanar::chooseLog(logName)
 
-  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page)
-
+  rqBody <- lanar::buildAggregationSettings(logId, xDimension, yDimension, zDimension, hideActivityFilter, aggrLevel, followers, type, cache, traceFilterSequence, limit, page)
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaAuthorization)
