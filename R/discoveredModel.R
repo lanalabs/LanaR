@@ -30,7 +30,7 @@ buildVariantFilterSettings <- function(logId, variantMin, variantMax){
 #' @return discovered model
 #' @param rqBody - request body as JSON
 #' @name filter
-filter <- function(logName, variantMin = 1, variantMax = 10000){
+discoveredModel <- function(logName, variantMin = 1, variantMax = 10000){
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
