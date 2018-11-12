@@ -1,4 +1,4 @@
-buildVariantFilterSettings <- function(logId, variantMin, variantMax){
+buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformance){
     rqBody <- paste0('
           {
             "activityExclusionFilter": [],
@@ -6,14 +6,8 @@ buildVariantFilterSettings <- function(logId, variantMin, variantMax){
             "includeLogId": true,
             "logId": ', logId,' ,
             "edgeThreshold": 1,
-            "traceFilterSequence": [
-            {
-            "type": "variantSliderFilter",
-            "min": ', variantMin,' ,
-            "max": ', variantMax,'
-            }
-            ],
-            "runConformance": false,
+            "traceFilterSequence": ', traceFilterSequence,' ,
+            "runConformance": ', runConformance, ',
             "graphControl": {
             "sizeControl": "Frequency",
             "colorControl": "AverageDuration"
@@ -28,9 +22,12 @@ buildVariantFilterSettings <- function(logId, variantMin, variantMax){
 #' @title Get discovered model data
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
 #' @return discovered model
-#' @param rqBody - request body as JSON
-#' @name filter
-filter <- function(logName, variantMin = 1, variantMax = 10000){
+#' @param logName Full name of the uploaded csv file in Lana
+#' @param traceFilterSequence Integrate any kind of filter from lana into your aggregation (optional, default = "[]")
+#' @param runConformance Decide whether you ant to include conformance data with a booelan value (optional, default = "true")
+#' @name discoveredModel
+
+discoveredModel <- function(logName, traceFilterSequence="[]", runConformance="true"){
 
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
@@ -39,7 +36,7 @@ filter <- function(logName, variantMin = 1, variantMax = 10000){
 
   logId <- lanar::chooseLog(logName)
 
-  rqBody <- lanar::buildVariantFilterSettings(logId, variantMin, variantMax)
+  rqBody <- lanar::buildVariantFilterSettings(logId, traceFilterSequence, runConformance)
 
 
   discoveredModelRequestData <- httr::GET(paste0(lanaApiUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
@@ -58,7 +55,7 @@ filter <- function(logName, variantMin = 1, variantMax = 10000){
 #' @name activityPerformance
 activityPerformance <- function(logName){
 
-  discoveredModelData <- filter(logName)
+  discoveredModelData <- discoveredModel(logName)
 
   if(length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))

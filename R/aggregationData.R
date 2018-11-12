@@ -1,5 +1,5 @@
 # build aggregation settings for the API call
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page) {
+buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache,maxValueAmount, traceFilterSequence,  limit, page) {
 
   if (zDimension != "null" ){
     zDimension = paste0('"', zDimension, '"')
@@ -18,10 +18,12 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
          "type": "', type, '",
          "followers": ', followers, ',
          "cache": "', cache, '",
+         "maxValueAmount": ', maxValueAmount, ',
          "miningRequest": {
           "includeHeader": true,
           "includeLogId": true,
            "logId": ', logId, ',
+           "traceFilterSequence":', traceFilterSequence, ',
            "runConformance": false,
            "sort": "start",
            "limit": ', limit, ',
@@ -42,6 +44,8 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
 #' @param followers Define followers (optional, default = "null")
 #' @param type (optional, default = "null")
 #' @param cache (optional, default = "{}")
+#' @param maxValueAmount Define the amount of values you wanto tdisplay before the rest are aggregated into "other" (optional, default = 5)
+#' @param traceFilterSequence Integrate any kind of filter from lana into your aggregation (optional, default = "[]")
 #' @param limit (optional, default = 10)
 #' @param page (optional, default = 1)
 #' @return Aggregated data
@@ -52,7 +56,7 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", limit = 10, page = 1){
+aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null", type="aggregation", cache="{}", maxValueAmount=5, traceFilterSequence="[]", limit = 10, page = 1){
   checkAuthentication()
   lanaApiUrl <- Sys.getenv("LANA_URL")
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
@@ -60,7 +64,7 @@ aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLe
 
   logId <- lanar::chooseLog(logName)
 
-  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, limit, page)
+  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, maxValueAmount, traceFilterSequence, limit, page)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
