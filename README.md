@@ -78,15 +78,10 @@ aggregate(logName, xDimension, yDimension)
 | totalDuration             | outputs the total duration given time dimension     |
 
 
-#### Optional Dimensions
+#### Optional Dimension Examples
 
-| Dimension              | what it does              | how to use it       |
-| -------------          | -------------             |
-| traceFilterSequence    |                           | [{"direct": ```false or true```,
-                                                        "succ": ```insert successor``` ,
-                                                        "pre": ```ìnsert predecessor```}]
-| byTime=dayOfWeek       | aggregate by day of week  |
-| byTime=byHour          | aggregate by day of week  |
+**TraceFilterSequence:** 
+
 
 
 
