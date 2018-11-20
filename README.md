@@ -80,9 +80,10 @@ aggregate(logName, xDimension, yDimension)
 
 #### Optional Dimension Examples
 
-**TraceFilterSequence:** 
+##### TraceFilterSequence: 
 
-__attributeFilter__
+###### attributeFilter
+
 traceFilterSequence":[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```},{"max":```max number```,"min":```min number```,"type":"variantSliderFilter"}]
 
 
