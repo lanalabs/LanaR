@@ -82,9 +82,17 @@ aggregate(logName, xDimension, yDimension)
 
 ##### TraceFilterSequence: 
 
-###### attributeFilter
+###### Attribute Filter
 
-traceFilterSequence":[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```},{"max":```max number```,"min":```min number```,"type":"variantSliderFilter"}]
+traceFilterSequence = [{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```},{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}]
+
+###### Case Duration Filter
+
+traceFilterSequence= [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"},{"type":"traceDurationFilter","minTraceDuration":```min duration in miliseconds```,"maxTraceDuration":```max duration in miliseconds```}]
+
+###### Timespan Filter
+
+
 
 
 
