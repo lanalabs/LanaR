@@ -82,6 +82,10 @@ aggregate(logName, xDimension, yDimension)
 
 **TraceFilterSequence:** 
 
+__attributeFilter__
+traceFilterSequence":[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```},{"max":```max number```,"min":```min number```,"type":"variantSliderFilter"}]
+
+
 
 
 
