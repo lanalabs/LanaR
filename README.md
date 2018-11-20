@@ -88,7 +88,7 @@ aggregate(logName, xDimension, yDimension)
 
 ###### Attribute Filter
 
-[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}]
+[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```true or false```}]
 
 ###### Case Duration Filter
 
@@ -112,7 +112,7 @@ aggregate(logName, xDimension, yDimension)
 
 ###### Hide Activities Filter
 
-[{"type":"endpointFilter","activities":["```àctivity1```","```àctivity2```"],"inverted":false}]
+[{"type":"endpointFilter","activities":["```àctivity1```","```àctivity2```"],"inverted":```true or false```}]
 
 
 #### Examples
