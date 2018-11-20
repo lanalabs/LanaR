@@ -78,25 +78,41 @@ aggregate(logName, xDimension, yDimension)
 | totalDuration             | outputs the total duration given time dimension     |
 
 
-#### Optional Dimension Examples
+#### Advanced Optional Dimensions
 
 ##### TraceFilterSequence: 
 
+###### Variant Filter
+
+[{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}]
+
 ###### Attribute Filter
 
-traceFilterSequence = [{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```},{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}]
+[{"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}]
 
 ###### Case Duration Filter
 
-traceFilterSequence= [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"},{"type":"traceDurationFilter","minTraceDuration":```min duration in miliseconds```,"maxTraceDuration":```max duration in miliseconds```}]
+[{"type":"traceDurationFilter","minTraceDuration":```min duration in miliseconds```,"maxTraceDuration":```max duration in miliseconds```}]
 
 ###### Timespan Filter
 
+[{"from":```start time in miliseconds```,"to":```ènd time in miliseconds```,"startInRange":true,"endInRange":true,"inverted":false,"type":"timeRangeFilter"}]
 
+###### Activity Filter
 
+[{"type":"activityFilter","activity":"```àctivity1```","inverted":```true or false```},{"type":"activityFilter","activity":"```àctivity 2```","inverted":```true or false```}]
 
+###### Follower Filter
 
+[{"direct":```true or false```,"pre":"```from```","succ":"```to```","useDuration":```true or false```,"inverted":```true or false```,"type":"followerFilter"}]
 
+###### Endpoint Filter
+
+[{"type":"endpointFilter","activities":["```activity1```","```àctivity2```"],"inverted":```true or false```}]
+
+###### Hide Activities Filter
+
+[{"type":"endpointFilter","activities":["```àctivity1```","```àctivity2```"],"inverted":false}]
 
 
 #### Examples
@@ -138,4 +154,16 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 | byTime=byMonth    | totalDuration | Case Count    |
 | -------------     | ------------- | ------------- |
 | Jan 2016           | 85032120000  | 2000          |
+
+
+```
+aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}])
+```
+
+```
+aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}, {"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}])
+```
+
+
+
 
