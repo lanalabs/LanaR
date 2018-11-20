@@ -80,6 +80,8 @@ aggregate(logName, xDimension, yDimension)
 
 #### Advanced Optional Dimensions
 
+If you are more experienced with Lana, you can insert any kind of filter that you use in Lana into your aggregation or discovered model functions, by simply adding a tracefilter sequence.
+
 ##### TraceFilterSequence: 
 
 ###### Variant Filter
@@ -100,7 +102,7 @@ aggregate(logName, xDimension, yDimension)
 
 ###### Activity Filter
 
-[{"type":"activityFilter","activity":"```àctivity1```","inverted":```true or false```},{"type":"activityFilter","activity":"```àctivity 2```","inverted":```true or false```}]
+[{"type":"activityFilter","activity":"```activity1```","inverted":```true or false```},{"type":"activityFilter","activity":"```activity 2```","inverted":```true or false```}]
 
 ###### Follower Filter
 
@@ -108,11 +110,11 @@ aggregate(logName, xDimension, yDimension)
 
 ###### Endpoint Filter
 
-[{"type":"endpointFilter","activities":["```activity1```","```àctivity2```"],"inverted":```true or false```}]
+[{"type":"endpointFilter","activities":["```activity1```","```activity2```"],"inverted":```true or false```}]
 
 ###### Hide Activities Filter
 
-[{"type":"endpointFilter","activities":["```àctivity1```","```àctivity2```"],"inverted":```true or false```}]
+[{"type":"endpointFilter","activities":["```activity1```","```activity2```"],"inverted":```true or false```}]
 
 
 #### Examples
