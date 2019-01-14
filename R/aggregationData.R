@@ -64,37 +64,37 @@ aggregate <- function(logName, xDimension, yDimension, zDimension="null", aggrLe
   lanaAuthorization <- Sys.getenv("LANA_TOKEN")
   lanaUserId <- Sys.getenv("LANA_USERID")
 
-  logId <- lanar::chooseLog(logName)
+  logId <- chooseLog(logName)
 
-  rqBody <- lanar::buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page)
+  rqBody <- buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page)
 
   # Make request to get aggregated data from LANA
   aggregationRequestData <- httr::GET(paste0(lanaApiUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaAuthorization)
   )
 
-  lanar::checkHttpErrors(aggregationRequestData)
+  checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
+
   if(!isEmptyLog(aggregationRequestData)) {
     actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
     chartValues <- actAggrData$chartValues
+    if(!(length(chartValues)==0)) {
+      if(".id" %in% colnames(chartValues)) {
+        chartValues <- plyr::rename(chartValues, c(".id"="action"))
+      }
 
-   if(".id" %in% colnames(chartValues)) {
-      chartValues <- plyr::rename(chartValues, c(".id"="action"))
-   }
+      if(ncol(chartValues) == 3){
+        names(chartValues) <- c(xDimension, yDimension,"Case Count")
+      }
 
-    if(ncol(chartValues) == 3){
-    names(chartValues) <- c(xDimension, yDimension,"Case Count")
+      # if(ncol(chartValues) == 4){
+      #  names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
+      #}
+
+      return(chartValues)
+    }} else {
+      return(NULL)
     }
-
-   # if(ncol(chartValues) == 4){
-    #  names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
-    #}
-
-    return(chartValues)
-  } else {
-    return(NULL)
-  }
-
 }
