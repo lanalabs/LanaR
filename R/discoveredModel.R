@@ -1,3 +1,5 @@
+# build aggregation settings for the API call
+
 buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformance){
     rqBody <- paste0('
           {
@@ -27,24 +29,20 @@ buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformanc
 #' @param runConformance Decide whether you ant to include conformance data with a booelan value (optional, default = "true")
 #' @name discoveredModel
 
-discoveredModel <- function(logName, traceFilterSequence="[]", runConformance="true"){
+discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]", runConformance="true"){
 
-  checkAuthentication()
-  lanaApiUrl <- Sys.getenv("LANA_URL")
-  lanaAuthorization <- Sys.getenv("LANA_TOKEN")
-  lanaUserId <- Sys.getenv("LANA_USERID")
-
-  logId <- lanar::chooseLog(logName)
+  # Check the variables being tramsitted from LANA and receiving the user ID.
 
   rqBody <- lanar::buildVariantFilterSettings(logId, traceFilterSequence, runConformance)
 
 
-  discoveredModelRequestData <- httr::GET(paste0(lanaApiUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
-                                      httr::add_headers(Authorization = lanaAuthorization))
+  discoveredModelRequestData <- httr::GET(paste0(lanaUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
+                                      httr::add_headers(Authorization = lanaToken))
 
   checkHttpErrors(discoveredModelRequestData)
 
   discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
+
   return(discoveredModelData)
 }
 
@@ -53,9 +51,10 @@ discoveredModel <- function(logName, traceFilterSequence="[]", runConformance="t
 #' @return activity performance statistics as data frame
 #' @param discoveredModelData
 #' @name activityPerformance
-activityPerformance <- function(logName){
 
-  discoveredModelData <- discoveredModel(logName)
+activityPerformance <- function(lanaUrl, lanaToken, logId){
+
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId)
 
   if(length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))
@@ -65,5 +64,4 @@ activityPerformance <- function(logName){
 
   return(actStats)
 }
-
 

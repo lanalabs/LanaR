@@ -1,6 +1,9 @@
 #' Get all logs
 #' @return data frame with all log files owned by or shared with the authenticated user
 #' @name getLogs
+#'
+#' DEPRECEATED
+
 getLogs <- function() {
 
   checkAuthentication()
@@ -17,6 +20,19 @@ getLogs <- function() {
   )
 
 }
+
+# getLogs <- function(lanaUrl, lanaToken, lanaUserId) {
+#
+#   lanar::checkAuthentication(lanaUrl, lanaToken)
+#
+#   logData <- httr::GET(paste0(lanaUrl, "/api/users/", lanaUserId, "/logs"), httr::add_headers(Authorization = lanaToken))
+#
+#   lanar::checkHttpErrors(logData)
+#
+#   jsonlite::fromJSON(httr::content(logData, encoding = "UTF-8", type = "text"))
+#
+# }
+
 
 #' Choose specific log file
 chooseLog <- function(logName){
