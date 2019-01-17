@@ -13,5 +13,7 @@ isEmptyLog <- function(response) {
   responseData <- jsonlite::fromJSON(httr::content(response, as = "text", encoding = "UTF-8"))
   if(length(responseData$chartValues)==0) {
     return(TRUE)
+  } else {
+    return(FALSE)
   }
 }
