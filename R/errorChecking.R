@@ -4,7 +4,7 @@ checkHttpErrors <- function(response) {
       stop(paste0(httr::content(response), " \nHTTP error details = ", httr::http_status(response)$message))
   }
 
-  if(!isEmptyLog(response)) {
+  if(isEmptyLog(response)) {
       warning("No response data. Your filter settings led to an empty log.\n")
   }
 }
