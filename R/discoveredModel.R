@@ -39,7 +39,6 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]",
   discoveredModelRequestData <- httr::GET(paste0(lanaUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaToken))
 
-  checkHttpErrors(discoveredModelRequestData)
 
   discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
 
