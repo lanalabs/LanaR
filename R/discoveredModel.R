@@ -40,11 +40,7 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]",
                                           httr::add_headers(Authorization = lanaToken))
 
 
-  if (!discoveredModelRequestData$status_code==400){
     discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
-    } else {
-      return(NULL)
-  }
 
   return(discoveredModelData)
 }
