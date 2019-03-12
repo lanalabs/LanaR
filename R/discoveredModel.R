@@ -33,14 +33,18 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]",
 
   # Check the variables being tramsitted from LANA and receiving the user ID.
 
-  rqBody <- lanar::buildVariantFilterSettings(logId, traceFilterSequence, runConformance)
+  rqBody <- lanar::buildVariantFilterSettings(selectedLogId, traceFilterSequence, "true")
 
 
   discoveredModelRequestData <- httr::GET(paste0(lanaUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
-                                      httr::add_headers(Authorization = lanaToken))
+                                          httr::add_headers(Authorization = lanaToken))
 
 
-  discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
+  if (!discoveredModelRequestData$status_code==400){
+    discoveredModelData <- jsonlite::fromJSON(httr::content(discoveredModelRequestData, as = "text", encoding = "UTF-8"))
+    } else {
+      return(NULL)
+  }
 
   return(discoveredModelData)
 }
