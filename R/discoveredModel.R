@@ -6,7 +6,7 @@ buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformanc
             "activityExclusionFilter": [],
             "includeHeader": true,
             "includeLogId": true,
-            "logId": ', logId,' ,
+            "logId": "', logId,'",
             "edgeThreshold": 1,
             "traceFilterSequence": ', traceFilterSequence,' ,
             "runConformance": ', runConformance, ',
