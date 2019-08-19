@@ -14,22 +14,22 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
          {
          "xDimension": "', xDimension, '",
          "yDimension": "', yDimension, '",
-         "zDimension": "', zDimension, '",
+         "zDimension": ', zDimension, ',
          "aggregationType": "', aggrLevel, '",
          "type": "', type, '",
-         "followers": "', followers, '",
+         "followers": ', followers, ',
          "cache": "', cache, '",
-         "maxValueAmount": "', maxValueAmount, '",
+         "maxValueAmount": ', maxValueAmount, ',
          "miningRequest": {
-          "activityExclusionFilter":"', activityExclusionFilter, '",
+          "activityExclusionFilter":', activityExclusionFilter, ',
           "includeHeader": true,
           "includeLogId": true,
            "logId": "', logId, '",
-           "traceFilterSequence":"', traceFilterSequence, '",
+           "traceFilterSequence":', traceFilterSequence, ',
            "runConformance": false,
            "sort": "start",
-           "limit": "', limit, '",
-           "page": "', page, '"
+           "limit": ', limit, ',
+           "page": ', page, '
           }
          }')
 }
