@@ -77,7 +77,6 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
   checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
-
   actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
   chartValues <- actAggrData$chartValues
 
@@ -85,31 +84,14 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
     chartValues <-unnest(chartValues, values)
     }
 
-  names(chartValues)[names(chartValues) == "xAxis"] <- xDimension
-  names(chartValues)[names(chartValues) == "yAxis"] <- yDimension
-  names(chartValues)[names(chartValues) == "zAxis"] <- zDimension
+  names(chartValues)[names(chartValues) == "xAxis"] <-  gsub(".*=", "", xDimension)
+
+  names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
+
+  names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
 
   chartValues$`$type` <- NULL
   chartValues$`$type1` <- NULL
 
-  # Check which size the received dataframe is
-
-  #if(!(length(chartValues)==0)) {
-   # if(".id" %in% colnames(chartValues)) {
-    #  chartValues <- plyr::rename(chartValues, c(".id"="action"))
-    #}
-
-    #if(ncol(chartValues) == 3){
-     # names(chartValues) <- c(xDimension, yDimension,"Case Count")
-    #}
-
-    #if(ncol(chartValues) == 4){
-     #names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
-    #}
-
-    #return(chartValues)
-   #} else {
-    #return(NULL)
- # }
-
+  return(chartValues)
 }
