@@ -11,5 +11,7 @@ LazyData: true
 Imports:
     jsonlite,
     httr,
-    plyr
+    plyr,
+    stringr,
+    tidyr
 RoxygenNote: 6.1.0
