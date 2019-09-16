@@ -81,7 +81,7 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
   chartValues <- actAggrData$chartValues
 
   if(zDimension != "null"){
-    chartValues <-unnest(chartValues, values)
+    chartValues <- chartValues %>% select(-`$type`) %>% unnest(values)
     }
 
   names(chartValues)[names(chartValues) == "xAxis"] <-  gsub(".*=", "", xDimension)
