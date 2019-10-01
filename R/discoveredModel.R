@@ -18,7 +18,7 @@ buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformanc
             "limit": 20,
             "page": 1,
             "computeAttributeCounts": ', computeAttributeCounts, ',
-            "renderDiscoveredModel": ', renderDiscoveredModel'
+            "renderDiscoveredModel": ', renderDiscoveredModel, '
           }
       ')
 }
