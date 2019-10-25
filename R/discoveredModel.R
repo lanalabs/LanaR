@@ -1,6 +1,6 @@
 # build aggregation settings for the API call
 
-buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformance){
+buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformance, computeAttributeCounts, renderDiscoveredModel){
     rqBody <- paste0('
           {
             "activityExclusionFilter": [],
@@ -16,7 +16,9 @@ buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformanc
             },
             "sort": "cases",
             "limit": 20,
-            "page": 1
+            "page": 1,
+            "computeAttributeCounts": ', computeAttributeCounts, ',
+            "renderDiscoveredModel": ', renderDiscoveredModel, '
           }
       ')
 }
@@ -29,11 +31,11 @@ buildVariantFilterSettings <- function(logId, traceFilterSequence, runConformanc
 #' @param runConformance Decide whether you ant to include conformance data with a booelan value (optional, default = "true")
 #' @name discoveredModel
 
-discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]", runConformance="true"){
+discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence="[]", runConformance="true", computeAttributeCounts = "true", renderDiscoveredModel = "false"){
 
   # Check the variables being tramsitted from LANA and receiving the user ID.
 
-  rqBody <- lanar::buildVariantFilterSettings(logId, traceFilterSequence, "true")
+  rqBody <- lanar::buildVariantFilterSettings(logId, traceFilterSequence, runConformance, computeAttributeCounts, renderDiscoveredModel)
 
 
   discoveredModelRequestData <- httr::GET(paste0(lanaUrl, "/api/discoveredModelWithFilter?request=", URLencode(rqBody, reserved = T)),
