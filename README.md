@@ -27,21 +27,19 @@ getLogs()
 | 547               | 34            | SalesProcess.csv                 | 2018-09-13T13:27:50.414Z   | Europe/Berlin  |
 
 ## Filter and performance / followers statistics
-```
-filter(logName)
-```
-#### Example
-```
-discoveredModel("Incident_withImpactAttributes.csv")
+#### Example Usage
+```R
+# With empty trace filter sequence
+discoveredModel(lanaURL, lanaToken, logId)
+
+# With non-empty trace filter sequence
+discoveredModel(lanaURL, lanaToken, logId, traceFilterSequence = "trace sequence")
 ```
 ## Activity Performance Statistics
-gives statistics about activities such as minimum/maximum duration, average/median/total duration, standard deviation and frequency.
+Gives statistics about activities such as minimum/maximum duration, average/median/total duration, standard deviation and frequency.
+#### Example Usage
 ```
-activityPerformance(logName)
-```
-#### Example
-```
-activityPerformance("Incident_withImpactAttributes.csv")
+activityPerformance(lanaURL, lanaToken, logId)
 ```
 
 | .id                           | frequency       | totalDuration   | minDuration     | maxDuration   | avgDuration    | standardDeviation| median         |
@@ -58,8 +56,19 @@ activityPerformance("Incident_withImpactAttributes.csv")
 ## Aggregation
 Aggregation with different dimensions such as: time, attribute, frequency, average duration, median duration, total duration.
 ```
-aggregate(logName, xDimension, yDimension)
+aggregate(lanaURL, lanaToken, logId, xDimension, yDimension)
 ```
+Optional Parameters:
+* `zDimension` (default = 'null')
+* `aggrLevel` (default = 'traces')
+* `followers` (default = 'null')
+* `type` (default = 'aggregation')
+* `cache` (default = 'null')
+* `maxValueAmount` (default = 5)
+* `activityExclusionFilter` (default = '[]')
+* `traceFilterSequence` (default = '[]')
+* `limit` (default = 10)
+* `page` (default = 1)
 #### Aggregation Dimensions
 
 | Time Dimension         | what it does              |
@@ -119,7 +128,7 @@ If you are more experienced with Lana, you can insert any kind of filter that yo
 
 #### Examples
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=byMonth", yDimension = "frequency")
 ```
 
 | byTime=byMonth    | frequency     | Case Count    |
@@ -127,7 +136,7 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 | Jan 2016          | 2000          | 2000          |
 
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
 ```
 
 | byTime=dayOfWeek  | avgDuration   | Case Count    |
@@ -135,7 +144,7 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", 
 | Monday            | 42516060      | 2000          |
 
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=byHour", yDimension = "medianDuration")
 ```
 
 | byTime=byHour     | medianDuration   | Case Count    |
@@ -150,7 +159,7 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDi
 | 16                | 42516060         | 2000          |
 
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=byMonth", yDimension = "totalDuration")
 ```
 
 | byTime=byMonth    | totalDuration | Case Count    |
@@ -159,11 +168,11 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 
 
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}])
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}])
 ```
 
 ```
-aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}, {"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}])
+aggregate(lanaURL, lanaToken, logId, xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}, {"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}])
 ```
 
 
