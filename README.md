@@ -35,23 +35,11 @@ discoveredModel(lanaURL, lanaToken, logId)
 # With non-empty trace filter sequence
 discoveredModel(lanaURL, lanaToken, logId, traceFilterSequence = "trace sequence")
 ```
-## Activity Performance Statistics
-Gives statistics about activities such as minimum/maximum duration, average/median/total duration, standard deviation and frequency.
-#### Example Usage
-```
-activityPerformance(lanaURL, lanaToken, logId)
-```
-
-| .id                           | frequency       | totalDuration   | minDuration     | maxDuration   | avgDuration    | standardDeviation| median         |
-| -------------                 | -------------   | -------------   | -------------   | ------------- | -------------  | -------------    | -------------  |
-| Initial diagnosis             | 2337            | 1270500000      | 0               | 1320000       | 543645.7       | 238600.5         | 540000         |
-| Functional escalation         | 851             | 254640000       | 0               | 660000        | 299224.4       | 118595.1         | 300000         |
-|  Incident closure             | 2000            | 1582380000      | 0               | 2280000       | 791190.0       | 361650.6         | 780000         |
-|  Incident classification      | 2000            | 497580000       | 0               | 900000        | 248790.0       | 166740.6         | 240000         |
-|  Investigation and diagnosis  | 851             | 16600800000     | 0               | 60240000      | 19507403.1     | 12030401.3       | 19020000       |
-|  Incident logging             | 2000            | 1079040000      | 0               | 2040000       | 539520.0       | 389029.4         | 480000         |
-|  Resolution and recovery      | 1635            | 2944380000      | 0               | 6240000       | 1800844.0      | 1111854.5        | 1800000        |
-
+Optional Parameters:
+* `traceFilterSequence` integrate filter from lana (default = '[]')
+* `runConformance` include conformance data (default = 'true')
+* `computeAttributeCounts` (default = 'true')
+* `renderDiscoveredModel` (default = 'false')
 
 ## Aggregation
 Aggregation with different dimensions such as: time, attribute, frequency, average duration, median duration, total duration.
@@ -65,8 +53,8 @@ Optional Parameters:
 * `type` (default = 'aggregation')
 * `cache` (default = 'null')
 * `maxValueAmount` (default = 5)
-* `activityExclusionFilter` (default = '[]')
-* `traceFilterSequence` (default = '[]')
+* `activityExclusionFilter` hide activities in aggregation (default = '[]')
+* `traceFilterSequence` integrate filter from lana (default = '[]' no filter applied)
 * `limit` (default = 10)
 * `page` (default = 1)
 #### Aggregation Dimensions
