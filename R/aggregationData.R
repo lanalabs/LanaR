@@ -72,32 +72,26 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
 
   aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaToken)
-  )
+                                      )
 
   checkHttpErrors(aggregationRequestData)
 
   # Read response into data frame
-
   actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
   chartValues <- actAggrData$chartValues
 
-  # Check which size the received dataframe is
-
-  if(!(length(chartValues)==0)) {
-    if(".id" %in% colnames(chartValues)) {
-      chartValues <- plyr::rename(chartValues, c(".id"="action"))
+  if(zDimension != "null"){
+    chartValues <- chartValues %>% select(-`$type`) %>% unnest(values)
     }
 
-    if(ncol(chartValues) == 3){
-      names(chartValues) <- c(xDimension, yDimension,"Case Count")
-    }
+  names(chartValues)[names(chartValues) == "xAxis"] <-  gsub(".*=", "", xDimension)
 
-    if(ncol(chartValues) == 4){
-     names(chartValues) <- c(xDimension, yDimension, zDimension, "Case Count")
-    }
+  names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
 
-    return(chartValues)
-   } else {
-    return(NULL)
-  }
+  names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
+
+  chartValues$`$type` <- NULL
+  chartValues$`$type1` <- NULL
+
+  return(chartValues)
 }
