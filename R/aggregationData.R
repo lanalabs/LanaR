@@ -1,14 +1,6 @@
 # build aggregation settings for the API call
 
-buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, maxAmountAttributes, xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page) {
-
-  if (zDimension != "null" ){
-    zDimension = paste0('"', zDimension, '"')
-  }
-
-  if (followers != "null" ){
-    followers = paste0('"', zDimension, '"')
-  }
+buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page) {
 
   # process the valueFrom attribute
   # if input within "allCases", "allEvents", "allFollowers", put it directly as type
@@ -100,25 +92,15 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
 
   miningBody <- paste0('
          {
-         "xDimension": "', xDimension, '",
-         "yDimension": "', yDimension, '",
-         "zDimension": ', zDimension, ',
-         "aggregationType": "', aggrLevel, '",
-         "type": "', type, '",
-         "followers": ', followers, ',
-         "cache": "', cache, '",
-         "maxValueAmount": ', maxValueAmount, ',
-         "miningRequest": {
           "activityExclusionFilter":', activityExclusionFilter, ',
           "includeHeader": true,
           "includeLogId": true,
-           "logId": "', logId, '",
-           "traceFilterSequence":', traceFilterSequence, ',
-           "runConformance": false,
-           "sort": "start",
-           "limit": ', limit, ',
-           "page": ', page, '
-          }
+          "logId": "', logId, '",
+          "traceFilterSequence":', traceFilterSequence, ',
+          "runConformance": false,
+          "sort": "start",
+          "limit": ', limit, ',
+          "page": ', page, '
          }')
 
   if (outerBinning == "null"){
@@ -181,14 +163,13 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, valuesFrom, extractedValue, aggregationType="null", outerBinning="null", innerBinning="null", outerDateType="null", innerDateType="null", timeZone="null", maxAmountAttributes=4, zDimension="null", aggrLevel="traces", followers="null",
-                      type="aggregation", cache="{}", maxValueAmount=5, activityExclusionFilter="[]", traceFilterSequence="[]",
+aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, aggregationType="null", outerBinning="null", innerBinning="null", outerDateType="null", innerDateType="null", timeZone="null", maxAmountAttributes=4, activityExclusionFilter="[]", traceFilterSequence="[]",
                       limit = 10, page = 1){
 
   # Make request to get aggregated data from LANA
 
-  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache,
-                                     maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page)
+  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, logId, 
+                                     activityExclusionFilter, traceFilterSequence, limit, page)
 
   aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/v2/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaToken)
