@@ -15,7 +15,7 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
     events = unlist(strsplit(valuesFrom, "[,]"))
     valuesFrom = paste0('
       {
-      "type": "follower", 
+      "type": "follower",
       "preActivity": "', events[1], '",
       "succActivity": "', events[2], '"
       }')
@@ -38,9 +38,9 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
   } else {
     extractedValue = paste0('
       {
-      "type": "attributeValue", 
+      "type": "attributeValue",
       "attribute": "', extractedValue, '"
-      }') 
+      }')
   }
 
   # process the outerbinning and innerbinning according to API documentation
@@ -53,14 +53,14 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
     } else if (outerBinning %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
       outerBinning = paste0('
       {
-      "type": "', outerBinning, '", 
+      "type": "', outerBinning, '",
       "dateType": "', outerDateType, '",
       "timeZone": "', timeZone, '"
       }')
     } else {
       outerBinning = paste0('
       {
-      "type": "byAttribute", 
+      "type": "byAttribute",
       "attribute": "', outerBinning, '"
       }')
     }
@@ -75,14 +75,14 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
     } else if (innerBinning %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
       innerBinning = paste0('
       {
-      "type": "', innerBinning, '", 
+      "type": "', innerBinning, '",
       "dateType": "', innerDateType, '",
       "timeZone": "', timeZone, '"
       }')
     } else {
       innerBinning = paste0('
       {
-      "type": "byAttribute", 
+      "type": "byAttribute",
       "attribute": "', innerBinning, '"
       }')
     }
@@ -111,7 +111,7 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
       "aggregationType": "', aggregationType, '",
       "options": ', maxAmountAttributes, ',
       "miningRequest": ', miningBody,'
-      }')  
+      }')
   } else {
     rqBody <- paste0('
       {
@@ -122,7 +122,7 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
       "innerBinning": ', innerBinning, ',
       "options": ', maxAmountAttributes, ',
       "miningRequest": ', miningBody,'
-      }')  
+      }')
   }
 
 }
@@ -163,17 +163,19 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, aggregationType="null", outerBinning="null", innerBinning="null", outerDateType="null", innerDateType="null", timeZone="null", maxAmountAttributes=4, activityExclusionFilter="[]", traceFilterSequence="[]",
-                      limit = 10, page = 1){
+aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, aggregationType="null", outerBinning="null", innerBinning="null",
+                      outerDateType="null", innerDateType="null", timeZone="null", maxAmountAttributes=4, activityExclusionFilter="[]", traceFilterSequence="[]",
+                      limit = 10, page = 1) {
 
   # Make request to get aggregated data from LANA
 
-  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, logId, 
-                                     activityExclusionFilter, traceFilterSequence, limit, page)
+
+  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone,
+                                     maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page)
 
   aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/v2/aggregatedData?request=", URLencode(rqBody, reserved = T)),
                                       httr::add_headers(Authorization = lanaToken)
-                                      )
+  )
 
   checkHttpErrors(aggregationRequestData)
 
@@ -181,15 +183,15 @@ aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, agg
   actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
   chartValues <- actAggrData$chartValues
 
-  if(zDimension != "null"){
+  if(innerBinning != "null"){
     chartValues <- chartValues %>% select(-`$type`) %>% unnest(values)
-    }
+  }
 
-  names(chartValues)[names(chartValues) == "xAxis"] <-  gsub(".*=", "", xDimension)
+  names(chartValues)[names(chartValues) == "xAxis"] <-  outerBinning
 
-  names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
+  names(chartValues)[names(chartValues) == "yAxis"] <- extractedValue
 
-  names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
+  names(chartValues)[names(chartValues) == "zAxis"] <- innerBinning
 
   chartValues$`$type` <- NULL
   chartValues$`$type1` <- NULL
