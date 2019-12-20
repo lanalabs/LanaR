@@ -30,7 +30,7 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
   # process the extractedValue attribute
   # if input within "frequency", "duration", "startDate", "endDate", put it directly as type
   # else treat it as the attribute name
-  if (extractedValue %in% c("frequency", "duration", "startDate", "endDate")){
+  if (extractedValue %in% c("frequency", "duration", "startDate", "endDate", "exists")){
     extractedValue = paste0('
       {
       "type": "', extractedValue, '"
@@ -189,7 +189,10 @@ aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, agg
 
   names(chartValues)[names(chartValues) == "xAxis"] <-  outerBinning
 
-  names(chartValues)[names(chartValues) == "yAxis"] <- extractedValue
+  if (extractedValue == "exists")
+    names(chartValues)[names(chartValues) == "yAxis"] <- aggregationType
+  else
+    names(chartValues)[names(chartValues) == "yAxis"] <- extractedValue
 
   names(chartValues)[names(chartValues) == "zAxis"] <- innerBinning
 
