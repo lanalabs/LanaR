@@ -1,6 +1,6 @@
 # build aggregation settings for the API call
 
-buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone, maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page) {
+buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationFunction, grouping, secondaryGrouping, outerDateType, innerDateType, maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page) {
 
   # process the valueFrom attribute
   # if input within "allCases", "allEvents", "allFollowers", put it directly as type
@@ -30,60 +30,60 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
   # process the extractedValue attribute
   # if input within "frequency", "duration", "startDate", "endDate", put it directly as type
   # else treat it as the attribute name
-  if (extractedValue %in% c("frequency", "duration", "startDate", "endDate", "exists")){
+  if (extractedValue %in% c("frequency", "duration", "startDate", "endDate")){
     extractedValue = paste0('
       {
-      "type": "', extractedValue, '"
+      "type": "', extractedValue, '",
+      "aggregationFunction": "', aggregationFunction, '"
       }')
   } else {
     extractedValue = paste0('
       {
-      "type": "attributeValue",
-      "attribute": "', extractedValue, '"
+      "type": "attribute",
+      "attribute": "', extractedValue, '",
+      "aggregationFunction": "', aggregationFunction, '"
       }')
   }
 
-  # process the outerbinning and innerbinning according to API documentation
-  if (outerBinning != "null") {
-    if (outerBinning %in% c("byActivity", "byDuration")){
-      outerBinning = paste0('
+  # process the grouping and secondaryGrouping according to API documentation
+  if (grouping != "null") {
+    if (grouping %in% c("byActivity", "byDuration")){
+      grouping = paste0('
         {
-        "type": "', outerBinning, '"
+        "type": "', grouping, '"
         }')
-    } else if (outerBinning %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
-      outerBinning = paste0('
+    } else if (grouping %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
+      grouping = paste0('
       {
-      "type": "', outerBinning, '",
-      "dateType": "', outerDateType, '",
-      "timeZone": "', timeZone, '"
+      "type": "', grouping, '",
+      "dateType": "', outerDateType, '"
       }')
     } else {
-      outerBinning = paste0('
+      grouping = paste0('
       {
       "type": "byAttribute",
-      "attribute": "', outerBinning, '"
+      "attribute": "', grouping, '"
       }')
     }
   }
 
-  if (innerBinning != "null") {
-    if (innerBinning %in% c("byActivity", "byDuration")){
-      innerBinning = paste0('
+  if (secondaryGrouping != "null") {
+    if (secondaryGrouping %in% c("byActivity", "byDuration")){
+      secondaryGrouping = paste0('
         {
-        "type": "', innerBinning, '"
+        "type": "', secondaryGrouping, '"
         }')
-    } else if (innerBinning %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
-      innerBinning = paste0('
+    } else if (secondaryGrouping %in% c("byYear", "byMonth", "byQuarter", "byDayOfWeek", "byDayOfYear", "byHourOfDay")){
+      secondaryGrouping = paste0('
       {
-      "type": "', innerBinning, '",
-      "dateType": "', innerDateType, '",
-      "timeZone": "', timeZone, '"
+      "type": "', secondaryGrouping, '",
+      "dateType": "', innerDateType, '"
       }')
     } else {
-      innerBinning = paste0('
+      secondaryGrouping = paste0('
       {
       "type": "byAttribute",
-      "attribute": "', innerBinning, '"
+      "attribute": "', secondaryGrouping, '"
       }')
     }
   }
@@ -103,12 +103,11 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
           "page": ', page, '
          }')
 
-  if (outerBinning == "null"){
+  if (grouping == "null"){
     rqBody <- paste0('
       {
       "valuesFrom": ', valuesFrom, ',
-      "extractedValue": ', extractedValue, ',
-      "aggregationType": "', aggregationType, '",
+      "metric": ', extractedValue, ',
       "options": ', maxAmountAttributes, ',
       "miningRequest": ', miningBody,'
       }')
@@ -116,10 +115,9 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
     rqBody <- paste0('
       {
       "valuesFrom": ', valuesFrom, ',
-      "extractedValue": ', extractedValue, ',
-      "aggregationType": "', aggregationType, '",
-      "outerBinning": ', outerBinning, ',
-      "innerBinning": ', innerBinning, ',
+      "metric": ', extractedValue, ',
+      "grouping": ', grouping, ',
+      "secondaryGrouping": ', secondaryGrouping, ',
       "options": ', maxAmountAttributes, ',
       "miningRequest": ', miningBody,'
       }')
@@ -130,25 +128,18 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
 #' @title Aggregate
 #' Aggregate data once uploaded to Lana
 #' Aggregations can be calculated by time (month, day of week, hour) or by attribute regarding the frequency, average duration, median duration and total duration. Also the aggregated data can be grouped by attributes.
-#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://api.lana-labs.com/#/routes/getAggregatedData
+#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://gitlab.lana-labs.com/lana-labs/lana-backend-scala/blob/master/janus/assets/static/swagger.yml#model-AggregationRequest
 #' @param valuesFrom ("allCases" / "allEvents" / "allFollowers" / "event" / "followers") - if input is event, valuesFrom should be the activity name; if input is followers, valuesFrom should contain both pre and succ separated by comma.
 #' @param extractedValue ("frequency" / "duration" / "startDate" / "endDate" / "attributeValue") - if input is a attribute value, extractedValue should be that attribute name
-#' @param aggregationType (optional, "min" / "max" / "sum" / "mean" / "median")
-#' @param outerBinning (optional, "byActivity" / "byDuration" / "byYear" / "byMonth" / "byQuarter" / "byDayOfWeek" / "byDayOfYear" / "byHourOfDay")
-#' @param outerDateType (optional, the date type for outerbinning)
-#' @param innerBinning (optional, "byActivity" / "byDuration" / "byYear" / "byMonth" / "byQuarter" / "byDayOfWeek" / "byDayOfYear" / "byHourOfDay")
-#' @param innerDateType (optional, the date type for innerbinning)
-#' @param timeZone (optional, time zone id for outer and inner binning)
+#' @param aggregationFunction (optional, "min" / "max" / "sum" / "mean" / "median")
+#' @param grouping (optional, attributeName / "byActivity" / "byDuration" / "byYear" / "byMonth" / "byQuarter" / "byDayOfWeek" / "byDayOfYear" / "byHourOfDay")
+#' @param outerDateType (optional, the date type for grouping)
+#' @param secondaryGrouping (optional, attributeName / "byActivity" / "byDuration" / "byYear" / "byMonth" / "byQuarter" / "byDayOfWeek" / "byDayOfYear" / "byHourOfDay")
+#' @param innerDateType (optional, the date type for secondaryGrouping)
 #' @param maxAmountAttributes (optional, default = 4)
 #' @param lanaUrl URL of the instance that LANA is running on
 #' @param lanaToken Lana API token read from LANA
 #' @param logId Log ID being read from LANA
-#' @param xDimension Define the x dimension for the aggregation
-#' @param yDimension Define the y dimension for the aggregation
-#' @param zDimension Define the z dimension for the aggregation (optional, default = "null")
-#' @param aggrLevel Define the aggregation level (optional, default = "traces")
-#' @param followers Define followers (optional, default = "null")
-#' @param type (optional, default = "null")
 #' @param cache (optional, default = "{}")
 #' @param maxValueAmount Define the amount of values you wanto tdisplay before the rest are aggregated into "other" (optional, default = 5)
 #' @param activityExclusionFilter Hide activities in aggregation (optional, default = "[]")
@@ -156,21 +147,14 @@ buildAggregationSettings <- function(valuesFrom, extractedValue, aggregationType
 #' @param limit (optional, default = 10)
 #' @param page (optional, default = 1)
 #' @return Aggregated data
-#' @examples
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
-
-aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, aggregationType="null", outerBinning="null", innerBinning="null",
-                      outerDateType="null", innerDateType="null", timeZone="null", maxAmountAttributes=4, activityExclusionFilter="[]", traceFilterSequence="[]",
+aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, aggregationFunction="null", grouping="null", secondaryGrouping="null",
+                      outerDateType="null", innerDateType="null", maxAmountAttributes=4, activityExclusionFilter="[]", traceFilterSequence="[]",
                       limit = 10, page = 1) {
 
   # Make request to get aggregated data from LANA
 
 
-  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationType, outerBinning, innerBinning, outerDateType, innerDateType, timeZone,
+  rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationFunction, grouping, secondaryGrouping, outerDateType, innerDateType,
                                      maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page)
 
   aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/v2/aggregatedData?request=", URLencode(rqBody, reserved = T)),
@@ -183,18 +167,18 @@ aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, agg
   actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
   chartValues <- actAggrData$chartValues
 
-  if(innerBinning != "null"){
+  if(secondaryGrouping != "null"){
     chartValues <- chartValues %>% select(-`$type`) %>% unnest(values)
   }
 
-  names(chartValues)[names(chartValues) == "xAxis"] <-  outerBinning
+  names(chartValues)[names(chartValues) == "xAxis"] <-  grouping
 
   if (extractedValue == "exists")
-    names(chartValues)[names(chartValues) == "yAxis"] <- aggregationType
+    names(chartValues)[names(chartValues) == "yAxis"] <- aggregationFunction
   else
     names(chartValues)[names(chartValues) == "yAxis"] <- extractedValue
 
-  names(chartValues)[names(chartValues) == "zAxis"] <- innerBinning
+  names(chartValues)[names(chartValues) == "zAxis"] <- secondaryGrouping
 
   chartValues$`$type` <- NULL
   chartValues$`$type1` <- NULL
