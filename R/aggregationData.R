@@ -157,7 +157,9 @@ aggregate <- function(lanaUrl, lanaToken, logId, valuesFrom, extractedValue, agg
   rqBody <- buildAggregationSettings(valuesFrom, extractedValue, aggregationFunction, grouping, secondaryGrouping, outerDateType, innerDateType,
                                      maxAmountAttributes, logId, activityExclusionFilter, traceFilterSequence, limit, page)
 
-  aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/v2/aggregatedData?request=", URLencode(rqBody, reserved = T)),
+  aggregationRequestData <- httr::POST(paste0(lanaUrl, "/api/v2/aggregate-data"),
+                                      body = list(request = rqBody),
+                                      encode = "multipart",
                                       httr::add_headers(Authorization = lanaToken)
   )
 
