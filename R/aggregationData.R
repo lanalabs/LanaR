@@ -135,31 +135,38 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
     edgeThreshold = 1,
     traceFilterSequence = handle_trace_filter_argument(traceFilterSequence),
     runConformance = FALSE,
-    options =  list(
-      maxAmountAttributes = maxValueAmount
-    ),
-    sort = "start",
+    sort = "",
     limit = limit,
     page = page
   )
   
   request_data <- list(
-    type = type,
     metric = build_request_metric(yDimension),
     grouping = build_request_grouping(xDimension),
-    if (zDimension != "null") (secondaryGrouping = build_request_grouping(zDimension)),
     valuesFrom = list(
       type = "allCases"
     ),
-    miningRequest = mining_request_data
+    options =  list(
+      maxAmountAttributes = maxValueAmount,
+      sortingOrder = "descending"
+    ),
+    miningRequest = mining_request_data,
+    type = type
   )
+  
+  if (zDimension != "null") {
+    request_data[["secondaryGrouping"]] <- build_request_grouping(zDimension)
+  }
   
   r <- httr::POST(
     paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
     body = list(request = jsonlite::toJSON(request_data, auto_unbox = TRUE)),
     encode = "multipart",
     httr::add_headers(header_fields)
+    #httr::verbose()
   )
+  
+  #httr::http_status(r)$message
   
   content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
   
@@ -170,11 +177,12 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
       unnest(values, names_repair = "unique")
   }
   
-  names(chart_values)[names(chart_values) == "xAxis"] <-  gsub(".*=", "", xDimension)
+  names(chart_values)[names(chart_values) == "xAxis"] <- gsub(".*=", "", xDimension)
   names(chart_values)[names(chart_values) == "yAxis"] <- gsub(".*=", "", yDimension)
   names(chart_values)[names(chart_values) == "zAxis"] <- gsub(".*=", "", zDimension)
   
   chart_values <- chart_values[, !names(chart_values) %in% c("$type","$type...1","$type...2")]
   
   return(chart_values)
+  
 }
