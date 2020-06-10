@@ -1,37 +1,96 @@
-# build aggregation settings for the API call
-
-buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache, maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page) {
-
-  if (zDimension != "null" ){
-    zDimension = paste0('"', zDimension, '"')
+#' Make authorisation headers for lana api
+#' 
+#' @param application_key the application key with or without starting 'API-Key'
+#' 
+#' @export
+make_authorisation_header <- function(application_key) {
+  
+  header_fields <- if ( grepl('API-Key', application_key) )  {
+    c(
+      Authorization = application_key
+    )
+  } else {
+    c(
+      Authorization = paste('API-Key', application_key)
+    )
   }
+  return(header_fields)
+}
 
-  if (followers != "null" ){
-    followers = paste0('"', zDimension, '"')
+#' Programmatically remove filters from a trace filter sequence by type
+#' 
+#' @param trace_filter the trace filter as character or R list
+#' @param remove_filters filter types to remove
+#'
+#' @export
+handle_trace_filter_argument <- function(trace_filter, remove_filters = list()) {
+  
+  res <- if (typeof( trace_filter) == 'character' ) 
+    jsonlite::fromJSON(trace_filter, simplifyVector = FALSE) else
+      trace_filter
+  
+  return(
+    rlist::list.filter(res, !(type %in% remove_filters) )
+  )
+}
+
+build_time_type <- function(time_aggregation) {
+  if (time_aggregation == "byMonth") {
+    type <- "byMonth"
+  } else if (time_aggregation == "dayOfWeek") {
+    type <- "byDayOfWeek"
+  } else if (time_aggregation == "byHour") {
+    type <- "byHourOfDay"
+  } else {
+    type <- time_aggregation
   }
+  return(type)
+}
 
-  rqBody <- paste0('
-         {
-         "xDimension": "', xDimension, '",
-         "yDimension": "', yDimension, '",
-         "zDimension": ', zDimension, ',
-         "aggregationType": "', aggrLevel, '",
-         "type": "', type, '",
-         "followers": ', followers, ',
-         "cache": "', cache, '",
-         "maxValueAmount": ', maxValueAmount, ',
-         "miningRequest": {
-          "activityExclusionFilter":', activityExclusionFilter, ',
-          "includeHeader": true,
-          "includeLogId": true,
-           "logId": "', logId, '",
-           "traceFilterSequence":', traceFilterSequence, ',
-           "runConformance": false,
-           "sort": "start",
-           "limit": ', limit, ',
-           "page": ', page, '
-          }
-         }')
+build_request_grouping <- function(x_dimension) {
+  if (grepl("^byAttribute=", x_dimension)) {
+    grouping <- list(
+      attribute = gsub("^byAttribute=","",x_dimension),
+      type = "byAttribute"
+    )
+  } else if (grepl("^byTime=", x_dimension)) {
+    grouping <- list(
+      type = build_time_type(gsub("^byTime=","",x_dimension)),
+      dateType = "startDate",
+      timeZone = "Europe/Berlin"
+    )
+  }
+  return(grouping)
+}
+
+build_request_metric <- function(y_dimension) {
+  if (grepl("^byAttribute=", y_dimension)) {
+    metric <- list(
+      attribute = gsub("^byAttribute=","",y_dimension),
+      type = "attribute",
+      aggregationFunction = "sum"
+    )
+  } else if (y_dimension == "frequency") {
+    metric <- list(
+      type = "frequency"
+    )
+  } else if (y_dimension == "avgDuration") {
+    metric <- list(
+      type = "duration",
+      aggregationFunction = "mean"
+    )
+  } else if (y_dimension == "medianDuration") {
+    metric <- list(
+      type = "duration",
+      aggregationFunction = "median"
+    )
+  } else if (y_dimension == "totalDuration") {
+    metric <- list(
+      type = "duration",
+      aggregationFunction = "total"
+    )
+  }
+  return(metric)
 }
 
 #' @title Aggregate
@@ -61,37 +120,61 @@ buildAggregationSettings <- function(xDimension, yDimension, logId, zDimension, 
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimension="null", aggrLevel="traces", followers="null",
-                      type="aggregation", cache="{}", maxValueAmount=5, activityExclusionFilter="[]", traceFilterSequence="[]",
-                      limit = 10, page = 1){
-
-  # Make request to get aggregated data from LANA
-
-  rqBody <- buildAggregationSettings(xDimension, yDimension, logId, zDimension, aggrLevel, followers, type, cache,
-                                     maxValueAmount, activityExclusionFilter, traceFilterSequence, limit, page)
-
-  aggregationRequestData <- httr::GET(paste0(lanaUrl, "/api/aggregatedData?request=", URLencode(rqBody, reserved = T)),
-                                      httr::add_headers(Authorization = lanaToken)
-                                      )
-
-  checkHttpErrors(aggregationRequestData)
-
-  # Read response into data frame
-  actAggrData <- jsonlite::fromJSON(httr::content(aggregationRequestData, as = "text", encoding = "UTF-8"))
-  chartValues <- actAggrData$chartValues
-
+aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimension = "null", 
+                       aggrLevel = "traces", followers = "null",
+                       type = "aggregation", cache = "{}", maxValueAmount = 5, 
+                       activityExclusionFilter = "[]", traceFilterSequence="[]", 
+                       limit = 10, page = 1) {
+  header_fields <- make_authorisation_header(lanaToken)
+  
+  mining_request_data <- list(
+    activityExclusionFilter = handle_trace_filter_argument(activityExclusionFilter),
+    includeHeader = TRUE,
+    includeLogId = TRUE,
+    logId = logId,
+    edgeThreshold = 1,
+    traceFilterSequence = handle_trace_filter_argument(traceFilterSequence),
+    runConformance = FALSE,
+    options =  list(
+      maxAmountAttributes = maxValueAmount
+    ),
+    sort = "start",
+    limit = limit,
+    page = page
+  )
+  
+  request_data <- list(
+    type = type,
+    metric = build_request_metric(yDimension),
+    grouping = build_request_grouping(xDimension),
+    if (zDimension != "null") (secondaryGrouping = build_request_grouping(zDimension)),
+    valuesFrom = list(
+      type = "allCases"
+    ),
+    miningRequest = mining_request_data
+  )
+  
+  r <- httr::POST(
+    paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
+    body = list(request = jsonlite::toJSON(request_data, auto_unbox = TRUE)),
+    encode = "multipart",
+    httr::add_headers(header_fields)
+  )
+  
+  content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
+  
+  chart_values <- content$chartValues
+  
   if(zDimension != "null"){
-    chartValues <- chartValues %>% select(-`$type`) %>% unnest(values)
-    }
-
-  names(chartValues)[names(chartValues) == "xAxis"] <-  gsub(".*=", "", xDimension)
-
-  names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
-
-  names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
-
-  chartValues$`$type` <- NULL
-  chartValues$`$type1` <- NULL
-
-  return(chartValues)
+    chart_values %<>% 
+      unnest(values, names_repair = "unique")
+  }
+  
+  names(chart_values)[names(chart_values) == "xAxis"] <-  gsub(".*=", "", xDimension)
+  names(chart_values)[names(chart_values) == "yAxis"] <- gsub(".*=", "", yDimension)
+  names(chart_values)[names(chart_values) == "zAxis"] <- gsub(".*=", "", zDimension)
+  
+  chart_values <- chart_values[, !names(chart_values) %in% c("$type","$type...1","$type...2")]
+  
+  return(chart_values)
 }
