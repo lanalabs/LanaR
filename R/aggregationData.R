@@ -163,14 +163,14 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
     body = list(request = jsonlite::toJSON(request_data, auto_unbox = TRUE)),
     encode = "multipart",
     httr::add_headers(header_fields)
-    #httr::verbose()
   )
   
-  #httr::http_status(r)$message
+  checkHttpErrors(r)
   
   content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
   
-  chart_values <- content$chartValues
+  chart_values <- content$chartValues %>%
+    select(-`$type`)
   
   if(zDimension != "null"){
     chart_values %<>% 
