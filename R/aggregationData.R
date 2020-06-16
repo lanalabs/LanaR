@@ -142,7 +142,6 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
   
   request_data <- list(
     metric = build_request_metric(yDimension),
-    grouping = build_request_grouping(xDimension),
     valuesFrom = list(
       type = "allCases"
     ),
@@ -153,7 +152,11 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
     miningRequest = mining_request_data,
     type = type
   )
-  
+
+  if (xDimension != "noAggregation") {
+    request_data[["grouping"]] <- build_request_grouping(xDimension)
+  }  
+    
   if (zDimension != "null") {
     request_data[["secondaryGrouping"]] <- build_request_grouping(zDimension)
   }
