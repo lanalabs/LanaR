@@ -1,91 +1,114 @@
 #' Make authorisation headers for lana api
 #' 
-#' @param application_key the application key with or without starting 'API-Key'
+#' @param applicationKey the application key with or without starting 'API-Key'
 #' 
 #' @export
-make_authorisation_header <- function(application_key) {
+makeAuthorisationHeader <- function(applicationKey) {
   
-  header_fields <- if ( grepl('API-Key', application_key) )  {
+  headerFields <- if (grepl('API-Key', applicationKey))  {
     c(
-      Authorization = application_key
+      Authorization = applicationKey
     )
   } else {
     c(
-      Authorization = paste('API-Key', application_key)
+      Authorization = paste('API-Key', applicationKey)
     )
   }
-  return(header_fields)
+  return(headerFields)
 }
 
 #' Programmatically remove filters from a trace filter sequence by type
 #' 
-#' @param trace_filter the trace filter as character or R list
-#' @param remove_filters filter types to remove
+#' @param traceFilter the trace filter as character or R list
+#' @param removeFilters filter types to remove
 #'
 #' @export
-handle_trace_filter_argument <- function(trace_filter, remove_filters = list()) {
+handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
   
-  res <- if (typeof( trace_filter) == 'character' ) 
-    jsonlite::fromJSON(trace_filter, simplifyVector = FALSE) else
-      trace_filter
+  res <- if (typeof( traceFilter) == 'character' ) 
+    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else
+      traceFilter
   
   return(
-    rlist::list.filter(res, !(type %in% remove_filters) )
+    rlist::list.filter(res, !(type %in% removeFilters) )
   )
 }
 
-build_time_type <- function(time_aggregation) {
-  if (time_aggregation == "byMonth") {
-    type <- "byMonth"
-  } else if (time_aggregation == "dayOfWeek") {
-    type <- "byDayOfWeek"
-  } else if (time_aggregation == "byHour") {
-    type <- "byHourOfDay"
+#' Make list used for the grouping requests for time dimensions, translates old api time aggregations
+#' 
+#' @param timeAggregation the time aggregation type
+#'
+#' @export
+buildTimeType <- function(timeAggregation) {
+  
+  type <- if (timeAggregation == "byMonth") {
+    "byMonth"
+  } else if (timeAggregation == "dayOfWeek") {
+    "byDayOfWeek"
+  } else if (timeAggregation == "byHour") {
+    "byHourOfDay"
   } else {
-    type <- time_aggregation
+    timeAggregation
   }
   return(type)
 }
 
-build_request_grouping <- function(x_dimension) {
-  if (grepl("^byAttribute=", x_dimension)) {
-    grouping <- list(
-      attribute = gsub("^byAttribute=","",x_dimension),
+#' Create grouping for request, separate handling for attributes and time dimensions
+#' 
+#' @param xDimension x dimension that is used for grouping for the aggregation 
+#'
+#' @export
+buildRequestGrouping <- function(xDimension) {
+  
+  grouping <- if (grepl("^byAttribute=", xDimension)) {
+    list(
+      attribute = gsub("^byAttribute=", "", xDimension),
       type = "byAttribute"
     )
-  } else if (grepl("^byTime=", x_dimension)) {
-    grouping <- list(
-      type = build_time_type(gsub("^byTime=","",x_dimension)),
+  } else if (grepl("^byTime=", xDimension)) {
+    list(
+      type = buildTimeType(gsub("^byTime=", "", xDimension)),
       dateType = "startDate",
       timeZone = "Europe/Berlin"
+    )
+  } else {
+    list(
+      attribute = xDimension,
+      type = "byAttribute"
     )
   }
   return(grouping)
 }
 
-build_request_metric <- function(y_dimension) {
-  if (grepl("^byAttribute=", y_dimension)) {
-    metric <- list(
-      attribute = gsub("^byAttribute=","",y_dimension),
+#' Create metric list for request, old api metrics are translated to new type and aggregationFunction
+#' 
+#' @param yDimension y dimension that is used for the metric for the aggregation 
+#'
+#' @export
+buildRequestMetric <- function(yDimension) {
+  
+  metric <- if (grepl("^byAttribute=", yDimension)) {
+    list(
+      attribute = gsub("^byAttribute=", "", yDimension),
       type = "attribute",
       aggregationFunction = "sum"
     )
-  } else if (y_dimension == "frequency") {
-    metric <- list(
+  } else if (yDimension == "frequency") {
+    list(
       type = "frequency"
     )
-  } else if (y_dimension == "avgDuration") {
-    metric <- list(
+  } else if (yDimension == "avgDuration") {
+    list(
       type = "duration",
       aggregationFunction = "mean"
     )
-  } else if (y_dimension == "medianDuration") {
-    metric <- list(
+  } else if (yDimension == "medianDuration") {
+    list(
       type = "duration",
       aggregationFunction = "median"
     )
-  } else if (y_dimension == "totalDuration") {
-    metric <- list(
+  } else if (yDimension == "totalDuration") {
+    list(
       type = "duration",
       aggregationFunction = "total"
     )
@@ -125,23 +148,23 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
                        type = "aggregation", cache = "{}", maxValueAmount = 5, 
                        activityExclusionFilter = "[]", traceFilterSequence="[]", 
                        limit = 10, page = 1) {
-  header_fields <- make_authorisation_header(lanaToken)
+  headerFields <- makeAuthorisationHeader(lanaToken)
   
-  mining_request_data <- list(
-    activityExclusionFilter = handle_trace_filter_argument(activityExclusionFilter),
+  miningRequestData <- list(
+    activityExclusionFilter = handleTraceFilterArgument(activityExclusionFilter),
     includeHeader = TRUE,
     includeLogId = TRUE,
     logId = logId,
     edgeThreshold = 1,
-    traceFilterSequence = handle_trace_filter_argument(traceFilterSequence),
+    traceFilterSequence = handleTraceFilterArgument(traceFilterSequence),
     runConformance = FALSE,
     sort = "",
     limit = limit,
     page = page
   )
   
-  request_data <- list(
-    metric = build_request_metric(yDimension),
+  requestData <- list(
+    metric = buildRequestMetric(yDimension),
     valuesFrom = list(
       type = "allCases"
     ),
@@ -149,43 +172,43 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
       maxAmountAttributes = maxValueAmount,
       sortingOrder = "descending"
     ),
-    miningRequest = mining_request_data,
+    miningRequest = miningRequestData,
     type = type
   )
 
   if (xDimension != "noAggregation") {
-    request_data[["grouping"]] <- build_request_grouping(xDimension)
+    requestData[["grouping"]] <- buildRequestGrouping(xDimension)
   }  
     
   if (zDimension != "null") {
-    request_data[["secondaryGrouping"]] <- build_request_grouping(zDimension)
+    requestData[["secondaryGrouping"]] <- buildRequestGrouping(zDimension)
   }
   
   r <- httr::POST(
     paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
-    body = list(request = jsonlite::toJSON(request_data, auto_unbox = TRUE)),
+    body = list(request = jsonlite::toJSON(requestData, auto_unbox = TRUE)),
     encode = "multipart",
-    httr::add_headers(header_fields)
+    httr::add_headers(headerFields)
   )
   
   checkHttpErrors(r)
   
   content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
   
-  chart_values <- content$chartValues %>%
+  chartValues <- content$chartValues %>%
     select(-`$type`)
   
   if(zDimension != "null"){
-    chart_values %<>% 
+    chartValues %<>% 
       unnest(values, names_repair = "unique")
   }
   
-  names(chart_values)[names(chart_values) == "xAxis"] <- gsub(".*=", "", xDimension)
-  names(chart_values)[names(chart_values) == "yAxis"] <- gsub(".*=", "", yDimension)
-  names(chart_values)[names(chart_values) == "zAxis"] <- gsub(".*=", "", zDimension)
+  names(chartValues)[names(chartValues) == "xAxis"] <- gsub(".*=", "", xDimension)
+  names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
+  names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
   
-  chart_values <- chart_values[, !names(chart_values) %in% c("$type","$type...1","$type...2")]
+  chartValues <- chartValues[, !names(chartValues) %in% c("$type","$type...1","$type...2")]
   
-  return(chart_values)
+  return(chartValues)
   
 }
