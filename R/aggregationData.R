@@ -25,7 +25,7 @@ makeAuthorisationHeader <- function(applicationKey) {
 #' @export
 handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
   
-  res <- if (typeof( traceFilter) == 'character' ) 
+  res <- if (typeof(traceFilter) == 'character' ) 
     jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else
       traceFilter
   
@@ -34,17 +34,29 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
   )
 }
 
-#' Make list used for the grouping requests for time dimensions, translates old api time aggregations
+buildValuesFrom <- function(aggrLevel) {
+  
+  valuesFrom <- if (aggrLevel == "traces") {
+    "allCases"
+  } else if (aggrLevel == "events") {
+    "allEvents"
+  } else {
+    aggrLevel
+  }
+  return(valuesFrom)
+}
+
+#' Translates legacy time aggregations
 #' 
 #' @param timeAggregation the time aggregation type
 #'
 #' @export
 buildTimeType <- function(timeAggregation) {
   
-  type <- if (timeAggregation == "byMonth") {
-    "byMonth"
-  } else if (timeAggregation == "dayOfWeek") {
+  type <- if (timeAggregation == "dayOfWeek") {
     "byDayOfWeek"
+  } else if (timeAggregation == "dayOfYear") {
+    "byDayOfYear"
   } else if (timeAggregation == "byHour") {
     "byHourOfDay"
   } else {
@@ -80,18 +92,19 @@ buildRequestGrouping <- function(xDimension) {
   return(grouping)
 }
 
-#' Create metric list for request, old api metrics are translated to new type and aggregationFunction
+#' Create metric list for request, legacy api metrics are translated to new type and aggregationFunction
 #' 
-#' @param yDimension y dimension that is used for the metric for the aggregation 
+#' @param yDimension y dimension that is used for the metric for the aggregation
+#' @param aggregationFunction y dimension that is used for the metric for the aggregation 
 #'
 #' @export
-buildRequestMetric <- function(yDimension) {
+buildRequestMetric <- function(yDimension, aggregationFunction) {
   
   metric <- if (grepl("^byAttribute=", yDimension)) {
     list(
       attribute = gsub("^byAttribute=", "", yDimension),
       type = "attribute",
-      aggregationFunction = "sum"
+      aggregationFunction = aggregationFunction
     )
   } else if (yDimension == "frequency") {
     list(
@@ -110,8 +123,19 @@ buildRequestMetric <- function(yDimension) {
   } else if (yDimension == "totalDuration") {
     list(
       type = "duration",
-      aggregationFunction = "total"
+      aggregationFunction = "sum"
     )
+  } else if (yDimension == "duration") {
+    list(
+      type = "duration",
+      aggregationFunction = aggregationFunction
+    )
+  } else {
+    list(
+      attribute = yDimension,
+      type = "attribute",
+      aggregationFunction = aggregationFunction
+    )    
   }
   return(metric)
 }
@@ -119,18 +143,19 @@ buildRequestMetric <- function(yDimension) {
 #' @title Aggregate
 #' Aggregate data once uploaded to Lana
 #' Aggregations can be calculated by time (month, day of week, hour) or by attribute regarding the frequency, average duration, median duration and total duration. Also the aggregated data can be grouped by attributes.
-#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://api.lana-labs.com/#/routes/getAggregatedData
+#' @description Gets the aggregation of the requested data with the specified parameters . \cr See https://cloud-backend.lanalabs.com/swagger#/Aggregation/post_api_v2_aggregate_data
 #' @param lanaUrl URL of the instance that LANA is running on
 #' @param lanaToken Lana API token read from LANA
 #' @param logId Log ID being read from LANA
-#' @param xDimension Define the x dimension for the aggregation
-#' @param yDimension Define the y dimension for the aggregation
-#' @param zDimension Define the z dimension for the aggregation (optional, default = "null")
+#' @param xDimension Define the grouping for the aggregation (optional, attributeName / "frequency / "duration")
+#' @param yDimension Define the metric for the aggregation (attributeName / "byTime=byMonth" / byTime=byDayOfWeek" / "byTime=byHourOfDay" / "byTime=byQuarter" / byTime=byYear" / byTime=byDayOfYear")
+#' @param zDimension Define the secondary grouping for the aggregation (optional, attributeName / "frequency / "duration")
 #' @param aggrLevel Define the aggregation level (optional, default = "traces")
-#' @param followers Define followers (optional, default = "null")
-#' @param type (optional, default = "null")
+#' @param followers Define followers (legacy leftover, not used)
+#' @param type (legacy leftover, not used)
+#' @param aggregationFunction Define the aggregation that is used for numeric and time metrics ("min", "max", "mean", "median", "sum")
 #' @param cache (optional, default = "{}")
-#' @param maxValueAmount Define the amount of values you wanto tdisplay before the rest are aggregated into "other" (optional, default = 5)
+#' @param maxValueAmount Define the amount of values that are displayed before the rest are aggregated into "other" (optional, default = 5)
 #' @param activityExclusionFilter Hide activities in aggregation (optional, default = "[]")
 #' @param traceFilterSequence Integrate any kind of filter from lana into your aggregation (optional, default = "[]")
 #' @param limit (optional, default = 10)
@@ -143,11 +168,12 @@ buildRequestMetric <- function(yDimension) {
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
 #' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
 
-aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimension = "null", 
+aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", yDimension, zDimension = "null", 
                        aggrLevel = "traces", followers = "null",
-                       type = "aggregation", cache = "{}", maxValueAmount = 5, 
+                       type = "aggregation", aggregationFunction = "sum", cache = "{}", maxValueAmount = 5, 
                        activityExclusionFilter = "[]", traceFilterSequence="[]", 
-                       limit = 10, page = 1) {
+                       limit = 10, page = 1, valueSorting = "CaseCount",
+                      sortingOrder = "descending") {
   headerFields <- makeAuthorisationHeader(lanaToken)
   
   miningRequestData <- list(
@@ -158,19 +184,19 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension, yDimension, zDimens
     edgeThreshold = 1,
     traceFilterSequence = handleTraceFilterArgument(traceFilterSequence),
     runConformance = FALSE,
-    sort = "",
     limit = limit,
     page = page
   )
   
   requestData <- list(
-    metric = buildRequestMetric(yDimension),
+    metric = buildRequestMetric(yDimension, aggregationFunction),
     valuesFrom = list(
-      type = "allCases"
+      type = buildValuesFrom(aggrLevel)
     ),
     options =  list(
       maxAmountAttributes = maxValueAmount,
-      sortingOrder = "descending"
+      valueSorting = valueSorting,
+      sortingOrder = sortingOrder
     ),
     miningRequest = miningRequestData,
     type = type
