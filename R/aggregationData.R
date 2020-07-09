@@ -34,6 +34,11 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
   )
 }
 
+#' Translates legacy aggregation levels 
+#' 
+#' @param aggrLevel the aggregation level
+#'
+#' @export
 buildValuesFrom <- function(aggrLevel) {
   
   valuesFrom <- if (aggrLevel == "traces") {
@@ -65,7 +70,7 @@ buildTimeType <- function(timeAggregation) {
   return(type)
 }
 
-#' Create grouping for request, separate handling for attributes and time dimensions
+#' Create grouping for request, separate handling for attributes and time dimensions, if no prefix "byAttribute" or "byTime" is given, xDimension is interpreted as attribute
 #' 
 #' @param xDimension x dimension that is used for grouping for the aggregation 
 #'
@@ -95,7 +100,7 @@ buildRequestGrouping <- function(xDimension) {
 #' Create metric list for request, legacy api metrics are translated to new type and aggregationFunction
 #' 
 #' @param yDimension y dimension that is used for the metric for the aggregation
-#' @param aggregationFunction y dimension that is used for the metric for the aggregation 
+#' @param aggregationFunction aggregation function ("min" / "max" / "mean" / "median" / "sum") 
 #'
 #' @export
 buildRequestMetric <- function(yDimension, aggregationFunction) {
@@ -147,32 +152,28 @@ buildRequestMetric <- function(yDimension, aggregationFunction) {
 #' @param lanaUrl URL of the instance that LANA is running on
 #' @param lanaToken Lana API token read from LANA
 #' @param logId Log ID being read from LANA
-#' @param xDimension Define the grouping for the aggregation (optional, attributeName / "frequency / "duration")
+#' @param xDimension Define the grouping for the aggregation (optional, default = "noAggregation", attributeName / "frequency / "duration")
 #' @param yDimension Define the metric for the aggregation (attributeName / "byTime=byMonth" / byTime=byDayOfWeek" / "byTime=byHourOfDay" / "byTime=byQuarter" / byTime=byYear" / byTime=byDayOfYear")
-#' @param zDimension Define the secondary grouping for the aggregation (optional, attributeName / "frequency / "duration")
-#' @param aggrLevel Define the aggregation level (optional, default = "traces")
+#' @param zDimension Define the secondary grouping for the aggregation (optional, default = "null", attributeName / "frequency / "duration")
+#' @param aggrLevel Define the aggregation level (optional, default = "traces", "traces" == "allCases" / "events" == "allEvents")
 #' @param followers Define followers (legacy leftover, not used)
-#' @param type (legacy leftover, not used)
-#' @param aggregationFunction Define the aggregation that is used for numeric and time metrics ("min", "max", "mean", "median", "sum")
+#' @param type (optional, default = "null")
+#' @param aggregationFunction Define the aggregation that is used for numeric and time metrics ("min" / "max" / "mean" / "median" / "sum")
 #' @param cache (optional, default = "{}")
 #' @param maxValueAmount Define the amount of values that are displayed before the rest are aggregated into "other" (optional, default = 5)
 #' @param activityExclusionFilter Hide activities in aggregation (optional, default = "[]")
 #' @param traceFilterSequence Integrate any kind of filter from lana into your aggregation (optional, default = "[]")
 #' @param limit (optional, default = 10)
 #' @param page (optional, default = 1)
-#' @return Aggregated data
-#' @examples
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=dayOfWeek", yDimension = "avgDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byHour", yDimension = "medianDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration")
-#' aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "frequency", zDimension = "byAttribute=Est. Cost")
+#' @param valueSorting Sorting option of the aggregated values (optional, default = "caseCount", "caseCount" / "numericValue" / "alphabetic")
+#' @param sortingOrder Sorting order of the aggregated values (optional, default = "descending", "ascending" / "descending")
+#' @return A data frame with the aggregated data
 
 aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", yDimension, zDimension = "null", 
                        aggrLevel = "traces", followers = "null",
                        type = "aggregation", aggregationFunction = "sum", cache = "{}", maxValueAmount = 5, 
                        activityExclusionFilter = "[]", traceFilterSequence="[]", 
-                       limit = 10, page = 1, valueSorting = "CaseCount",
+                       limit = 10, page = 1, valueSorting = "caseCount",
                       sortingOrder = "descending") {
   headerFields <- makeAuthorisationHeader(lanaToken)
   

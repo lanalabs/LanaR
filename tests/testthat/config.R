@@ -1,0 +1,3 @@
+lanaUrl <- ""
+selectedLogId <- ""
+lanaToken <- ""
