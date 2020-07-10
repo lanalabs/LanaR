@@ -222,8 +222,7 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", y
   
   content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
   
-  chartValues <- content$chartValues %>%
-    select(-`$type`)
+  chartValues <- content$chartValues
   
   if(zDimension != "null"){
     chartValues %<>% 
