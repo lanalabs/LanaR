@@ -1,9 +1,7 @@
 #' mining request build
 #'
 #' @param log_id
-#' @param tf_type
-#' @param tf_min
-#' @param tf_max
+#' @param trace_filter
 #'
 #' @return
 #' @export
@@ -112,9 +110,7 @@ return(content)
 #' @param values_from "allCases" or "allEvents"
 #' @param grouping_date "byYear", "byQuarter", "byMonth", "byDayOfYear", "byDayOfWeek" or "byHourOfDay"
 #' @param maxAmountAttributes default = 10
-#' @param tf_type trace filter type
-#' @param tf_min trace filter minimum
-#' @param tf_max trace filter maximum
+#' @param trace_filter
 #'
 #' @return frequency counts
 #'
