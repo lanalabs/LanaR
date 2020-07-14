@@ -15,5 +15,8 @@ Imports:
     stringr,
     tidyr,
     dplyr,
-    magrittr
+    magrittr,
+    tibble
+Suggests:
+    testthat
 RoxygenNote: 6.1.0

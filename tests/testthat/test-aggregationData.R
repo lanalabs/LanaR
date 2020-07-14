@@ -1,4 +1,4 @@
-context("Test context for basic functions")
+context("Test context for aggregation function")
 source("config.R")
 
 #the expected data frames were generated with the old aggregate-function calling the /api/aggregatedData endpoint or via the LANA frontend
