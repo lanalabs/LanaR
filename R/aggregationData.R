@@ -225,8 +225,8 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", y
   chartValues <- content$chartValues
   
   if(zDimension != "null"){
-    chartValues %<>% 
-      unnest(values, names_repair = "unique")
+    chartValues <- chartValues %>%
+      tidyr::unnest(values, names_repair = "unique")
   }
   
   names(chartValues)[names(chartValues) == "xAxis"] <- gsub(".*=", "", xDimension)

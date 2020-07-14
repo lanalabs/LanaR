@@ -20,8 +20,8 @@ test_that("aggregations with attribute and time groupings return the expected da
   byMonth <- c("Jan 2016", "Jan 2016", "Jan 2016", "Jan 2016")
 
   df_expected <- data.frame(caseCount, Country, frequency, byMonth, stringsAsFactors = FALSE) %>%
-    mutate(caseCount = as.integer(caseCount), frequency = as.integer(frequency)) %>%
-    as_tibble()
+    dplyr::mutate(caseCount = as.integer(caseCount), frequency = as.integer(frequency)) %>%
+    tibble::as_tibble()
 
   testthat::expect_identical(df_expected, df_aggregation)
 
@@ -41,7 +41,7 @@ test_that("aggregations with numeric attribute metrics return the expected dataf
   Cost <- c(8536000)
 
   df_expected <- data.frame(caseCount, noAggregation, Cost, stringsAsFactors = FALSE) %>%
-    mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
+    dplyr::mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
 
   testthat::expect_identical(df_expected, df_aggregation)
 
@@ -63,7 +63,7 @@ test_that("aggregations with specified valueSorting and sortingOrder return the 
   avgDuration <- c(23770458.715596333, 63067525.423728816, 22307368.421052627, 27052327.868852418, 49583186.221743822)
 
   df_expected <- data.frame(caseCount, Classification, avgDuration, stringsAsFactors = FALSE) %>%
-    mutate(caseCount = as.integer(caseCount))
+    dplyr::mutate(caseCount = as.integer(caseCount))
 
   testthat::expect_identical(df_expected, df_aggregation)
 
@@ -84,7 +84,7 @@ test_that("aggregations with a traceFilterSequence and maxValueAmount return the
   Cost <- c(146000, 120000, 162000, 176000, 109000, 94000, 64000, 168000, 149000, 2223000)
 
   df_expected <- data.frame(caseCount, byHour, Cost, stringsAsFactors = FALSE) %>%
-    mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
+    dplyr::mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
 
   testthat::expect_identical(df_expected, df_aggregation)
 
