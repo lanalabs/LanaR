@@ -1,19 +1,20 @@
+library(stringr)
 #' mining request build
 #'
-#' @param log_id
-#' @param trace_filter
+#' @param logId
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-mining_request <- function(log_id, trace_filter){
+miningRequest <- function(logId, traceFilter){
 miningRequestData <- list(
   includeHeader = TRUE,
   includeLogId = TRUE,
-  logId = log_id,
+  logId = logId,
   edgeThreshold = 1,
-  traceFilterSequence = trace_filter,
+  traceFilterSequence = traceFilter,
   runConformance = FALSE
 )
 return(miningRequestData)
@@ -30,7 +31,7 @@ return(miningRequestData)
 #' #'
 #' #' @examples
 #'
-#' trace_filter <- function(type, min, max){
+#' traceFilter <- function(type, min, max){
 #'   if (is.null(type) | is.null(min) | is.null(max)) {
 #'     traceFilterSequence = list()
 #'   } else {
@@ -45,9 +46,9 @@ return(miningRequestData)
 
 #' request data build
 #'
-#' @param date_type
-#' @param grouping_date
-#' @param values_from
+#' @param dateType
+#' @param grouping
+#' @param valuesFrom
 #' @param maxAmountAttributes
 #' @param miningRequestData
 #'
@@ -55,20 +56,20 @@ return(miningRequestData)
 #' @export
 #'
 #' @examples
-request_data <- function(date_type, grouping_date, values_from, maxAmountAttributes, miningRequestData){
+requestData <- function(dateType, grouping, valuesFrom, maxAmountAttributes, miningRequestData){
 requestData <- list(
   #check null
   #check attribute grouping type
   grouping = list(
-    dateType = date_type,
+    dateType = dateType,
     timeZone = "Europe/Berlin",
-    type = grouping_date
+    type = grouping
   ),
   metric = list(
     type = "frequency"
   ),
   valuesFrom = list(
-    type = values_from
+    type = valuesFrom
   ),
   options =  list(
     maxAmountAttributes = maxAmountAttributes
@@ -80,190 +81,210 @@ return(requestData)
 
 #' post aggregate api call to lana
 #'
-#' @param lana_url
+#' @param lanaUrl
 #' @param requestData
-#' @param application_key
+#' @param applicationKey
 #'
 #' @return
 #' @export
 #'
 #' @examples
-aggregate_api_call <- function(lana_url, requestData, application_key){
+aggregateApiCall <- function(lanaUrl, requestData, applicationKey){
 response <- httr::POST(
-  paste0("https://", lana_url, "/api/v2/aggregate-data"),
+  paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
   body = list(request = jsonlite::toJSON(requestData, auto_unbox = TRUE)),
   encode = "multipart",
   httr::add_headers( c(
-    Authorization = application_key
+    Authorization = applicationKey
   ))
 )
-content <- httr::content(response)
+c <- httr::content(response)
+groupingLabel <- c[["groupingAxisLabel"]]
+groupingLabel <- str_replace_all(groupingLabel, " ", "_")
+metrikLabel <- c[["metricAxisLabel"]]
+metrikLabel <- str_replace_all(metrikLabel, " ", "_")
+content <- c$chartValues
+content <- do.call(rbind.data.frame, content)
+content$X.type <- NULL
+names(content)[names(content) == "xAxis"] <- groupingLabel
+names(content)[names(content) == "yAxis"] <- metrikLabel
+
+
+#content <- do.call(rbind.data.frame, c)
+#content <- jsonlite::fromJSON(httr::content(response, as = "text", encoding = "UTF-8"))
+
 return(content)
 }
 
 #' aggregated frequencies API call
 #'
-#' @param lana_url default = "cloud-backend.lanalabs.com"
-#' @param application_key API Key in Lana (Export Filter Settings)
-#' @param log_id id of uploaded log in lana
-#' @param date_type "startDate" or "endDate"
-#' @param values_from "allCases" or "allEvents"
-#' @param grouping_date "byYear", "byQuarter", "byMonth", "byDayOfYear", "byDayOfWeek" or "byHourOfDay"
+#' @param lanaUrl default = "cloud-backend.lanalabs.com"
+#' @param applicationKey API Key in Lana (Export Filter Settings)
+#' @param logId id of uploaded log in lana
+#' @param dateType "startDate" or "endDate"
+#' @param valuesFrom "allCases" or "allEvents"
+#' @param grouping "byYear", "byQuarter", "byMonth", "byDayOfYear", "byDayOfWeek" or "byHourOfDay"
 #' @param maxAmountAttributes default = 10
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return frequency counts
 #'
 #' @examples
-get_freq <- function(lana_url, application_key, log_id, date_type, values_from,
-                     grouping_date, maxAmountAttributes, trace_filter){
+getFreq <- function(lanaUrl, applicationKey, logId, dateType, valuesFrom,
+                     grouping, maxAmountAttributes, traceFilter){
 
-  miningRequestData <- mining_request(log_id, trace_filter)
-  requestData <- request_data(date_type, grouping_date, values_from, maxAmountAttributes, miningRequestData)
-  content <- aggregate_api_call(lana_url, requestData, application_key)
-  return(content$chartValues)
+  miningRequestData <- miningRequest(logId, traceFilter)
+  requestData <- requestData(dateType, grouping, valuesFrom, maxAmountAttributes, miningRequestData)
+  content <- aggregateApiCall(lanaUrl, requestData, applicationKey)
+  return(content)
 }
 
 #' aggregated frequencies per year
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_year <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                           maxAmountAttributes = 10, trace_filter = list()){
+getFreqYear <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                        valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byYear"
-  freq_year <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                        maxAmountAttributes, trace_filter)
-  return(freq_year)
+  grouping <- "byYear"
+  freqYear <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                        maxAmountAttributes, traceFilter)
+  return(freqYear)
 
 }
 
 #' aggregated frequencies per quarter
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_quarter <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                          maxAmountAttributes = 10, trace_filter = list()){
+getFreqQuarter <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                           valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byQuarter"
-  freq_quarter <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                        maxAmountAttributes, trace_filter)
-  return(freq_quarter)
+  grouping <- "byQuarter"
+  freqQuarter <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                        maxAmountAttributes, traceFilter)
+  return(freqQuarter)
 
 }
 
 #' aggregated frequencies per month
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_month <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                             maxAmountAttributes = 10, trace_filter = list()){
+getFreqMonth <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                         valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byMonth"
-  freq_month <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                        maxAmountAttributes, trace_filter)
-  return(freq_month)
+  grouping <- "byMonth"
+  freqMonth <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                        maxAmountAttributes, traceFilter)
+  return(freqMonth)
 
 }
 
 #' aggregated frequencies per day of year
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_dayofyear <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                             maxAmountAttributes = 10, trace_filter = list()){
+getFreqDayofYear <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byDayOfYear"
-  freq_dayofyear <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                        maxAmountAttributes, trace_filter)
-  return(freq_dayofyear)
+  grouping <- "byDayOfYear"
+  freqDayofYear <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                        maxAmountAttributes, traceFilter)
+  return(freqDayofYear)
 
 }
 
 #' aggregated frequencies per day of week
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_dayofweek <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                               maxAmountAttributes = 10, trace_filter = list()){
+getFreqDayofWeek <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byDayOfWeek"
-  freq_dayofweek <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                             maxAmountAttributes, trace_filter)
-  return(freq_dayofweek)
+  grouping <- "byDayOfWeek"
+  freqDayofWeek <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                             maxAmountAttributes, traceFilter)
+  return(freqDayofWeek)
 
 }
 
 #' aggregated frequencies per hour of the day
 #'
-#' @param lana_url
-#' @param application_key
-#' @param log_id
-#' @param date_type
-#' @param values_from
+#' @param lanaUrl
+#' @param applicationKey
+#' @param logId
+#' @param dateType
+#' @param valuesFrom
 #' @param maxAmountAttributes
-#' @param trace_filter
+#' @param traceFilter
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_freq_hourofday <- function(lana_url = "cloud-backend.lanalabs.com", application_key, log_id, date_type, values_from,
-                               maxAmountAttributes = 10, trace_filter = list()){
+getFreqHourofDay <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
 
-  grouping_date <- "byHourOfDay"
-  freq_hourofday <- get_freq(lana_url, application_key, log_id, date_type, values_from, grouping_date,
-                             maxAmountAttributes, trace_filter)
-  return(freq_hourofday)
+  grouping <- "byHourOfDay"
+  freqHourofDay <- getFreq(lanaUrl, applicationKey, logId, dateType, valuesFrom, grouping,
+                             maxAmountAttributes, traceFilter)
+  return(freqHourofDay)
 
 }
+
+getFreqAttribute <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
+                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+
+}
+
