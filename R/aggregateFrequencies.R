@@ -90,7 +90,7 @@ miningRequestBuilder <- function(logId, traceFilter){
 #' @export
 #'
 #' @examples
-requestDataBuilder <- function(groupingType, dateType, attribute, valuesFrom, maxAmountAttributes, miningRequestData){
+requestDataBuilder <- function(groupingType, dateType, attribute, valuesFrom, maxAmountAttributes, valueSorting, sortingOrder, miningRequestData){
   requestData <- list(
     metric = list(
       type = "frequency"
@@ -99,7 +99,9 @@ requestDataBuilder <- function(groupingType, dateType, attribute, valuesFrom, ma
       type = valuesFrom
     ),
     options =  list(
-      maxAmountAttributes = maxAmountAttributes
+      maxAmountAttributes = maxAmountAttributes,
+      valueSorting =  valueSorting,
+      sortingOrder =  sortingOrder
     ),
     miningRequest = miningRequestData
   )
@@ -158,10 +160,10 @@ aggregateApiCall <- function(lanaUrl, requestData, applicationKey){
 #'
 #' @examples
 freqBuilder <- function(lanaUrl, applicationKey, logId, dateType, attribute, valuesFrom,
-                        groupingType, maxAmountAttributes, traceFilter){
+                        groupingType, maxAmountAttributes, valueSorting, sortingOrder, traceFilter){
 
   miningRequestData <- miningRequestBuilder(logId, traceFilter)
-  requestData <- requestDataBuilder(groupingType, dateType, attribute, valuesFrom, maxAmountAttributes, miningRequestData)
+  requestData <- requestDataBuilder(groupingType, dateType, attribute, valuesFrom, maxAmountAttributes, valueSorting, sortingOrder, miningRequestData)
   content <- aggregateApiCall(lanaUrl, requestData, applicationKey)
   return(content)
 }
@@ -181,11 +183,12 @@ freqBuilder <- function(lanaUrl, applicationKey, logId, dateType, attribute, val
 #'
 #' @examples
 getFreq <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "null",
-                    valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                    valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                    sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "null"
   freq <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                      maxAmountAttributes, traceFilter)
+                      maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freq)
 
 }
@@ -205,11 +208,12 @@ getFreq <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logI
 #'
 #' @examples
 getFreqYear <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                        valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                        valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                        sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byYear"
   freqYear <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                          maxAmountAttributes, traceFilter)
+                          maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqYear)
 
 }
@@ -229,11 +233,12 @@ getFreqYear <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, 
 #'
 #' @examples
 getFreqQuarter <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                           valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                           valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                           sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byQuarter"
   freqQuarter <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                             maxAmountAttributes, traceFilter)
+                             maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqQuarter)
 
 }
@@ -253,11 +258,12 @@ getFreqQuarter <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKe
 #'
 #' @examples
 getFreqMonth <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                         valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                         valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                         sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byMonth"
   freqMonth <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                           maxAmountAttributes, traceFilter)
+                           maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqMonth)
 
 }
@@ -277,11 +283,12 @@ getFreqMonth <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey,
 #'
 #' @examples
 getFreqDayofYear <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                             valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                             sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byDayOfYear"
   freqDayofYear <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                               maxAmountAttributes, traceFilter)
+                               maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqDayofYear)
 
 }
@@ -301,11 +308,12 @@ getFreqDayofYear <- function(lanaUrl = "cloud-backend.lanalabs.com", application
 #'
 #' @examples
 getFreqDayofWeek <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                             valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                             sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byDayOfWeek"
   freqDayofWeek <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                               maxAmountAttributes, traceFilter)
+                               maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqDayofWeek)
 
 }
@@ -325,11 +333,12 @@ getFreqDayofWeek <- function(lanaUrl = "cloud-backend.lanalabs.com", application
 #'
 #' @examples
 getFreqHourofDay <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, dateType = "startDate",
-                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                             valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                             sortingOrder = "Descending", traceFilter = list()){
 
   groupingType <- "byHourOfDay"
   freqHourofDay <- freqBuilder(lanaUrl, applicationKey, logId, dateType, attribute = NULL, valuesFrom, groupingType,
-                               maxAmountAttributes, traceFilter)
+                               maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
   return(freqHourofDay)
 
 }
@@ -349,10 +358,12 @@ getFreqHourofDay <- function(lanaUrl = "cloud-backend.lanalabs.com", application
 #'
 #' @examples
 getFreqAttribute <- function(lanaUrl = "cloud-backend.lanalabs.com", applicationKey, logId, attribute,
-                             valuesFrom = "allCases", maxAmountAttributes = 10, traceFilter = list()){
+                             valuesFrom = "allCases", maxAmountAttributes = 10, valueSorting = "CaseCount",
+                             sortingOrder = "Descending", traceFilter = list()){
   groupingType <- "byAttribute"
   freqAttribute <- freqBuilder(lanaUrl, applicationKey, logId, dateType = NULL, attribute, valuesFrom, groupingType,
-                               maxAmountAttributes, traceFilter)
+                               maxAmountAttributes, valueSorting, sortingOrder, traceFilter)
 
   return(freqAttribute)
 }
+
