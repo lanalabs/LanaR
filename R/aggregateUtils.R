@@ -1,5 +1,13 @@
-library(stringr)
-
+#' options builder
+#'
+#' @param maxAmountAttributes
+#' @param valueSorting
+#' @param sortingOrder
+#'
+#' @return
+#' @export
+#'
+#' @examples
 optionsBuilder <- function(maxAmountAttributes, valueSorting, sortingOrder){
   options = list(
     maxAmountAttributes = maxAmountAttributes,
@@ -9,6 +17,15 @@ optionsBuilder <- function(maxAmountAttributes, valueSorting, sortingOrder){
   return(options)
 }
 
+#' metric builder for numeric attributes
+#'
+#' @param attribute
+#' @param agg
+#'
+#' @return
+#' @export
+#'
+#' @examples
 metricNumBuilder <- function(attribute, agg){
   metric = list(
     aggregationFunction = agg,
@@ -18,6 +35,12 @@ metricNumBuilder <- function(attribute, agg){
   return(metric)
 }
 
+#' metric builder for frequencies
+#'
+#' @return
+#' @export
+#'
+#' @examples
 metricFreqBuilder <- function(){
   metric = list(
     type = "frequency"
@@ -83,19 +106,19 @@ groupingBuilder <- function(groupingType, dateType, attribute){
 #' mining request builder
 #'
 #' @param logId
-#' @param traceFilter
+#' @param traceFilterSequence
 #'
 #' @return
 #' @export
 #'
 #' @examples
-miningRequestBuilder <- function(logId, traceFilter){
+miningRequestBuilder <- function(logId, traceFilterSequence){
   miningRequestData <- list(
     includeHeader = TRUE,
     includeLogId = TRUE,
     logId = logId,
     edgeThreshold = 1,
-    traceFilterSequence = traceFilter,
+    traceFilterSequence = traceFilterSequence,
     runConformance = FALSE
   )
   return(miningRequestData)
@@ -105,30 +128,31 @@ miningRequestBuilder <- function(logId, traceFilter){
 #'
 #' @param lanaUrl
 #' @param requestData
-#' @param applicationKey
+#' @param lanaToken
 #'
 #' @return
 #' @export
 #'
 #' @examples
-aggregateApiCall <- function(lanaUrl, requestData, applicationKey){
+aggregateApiCall <- function(lanaUrl, requestData, lanaToken){
   response <- httr::POST(
     paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
     body = list(request = jsonlite::toJSON(requestData, auto_unbox = TRUE)),
     encode = "multipart",
     httr::add_headers( c(
-      Authorization = applicationKey
+      Authorization = lanaToken
     ))
   )
   c <- httr::content(response)
   groupingLabel <- c[["groupingAxisLabel"]]
-  groupingLabel <- str_replace_all(groupingLabel, " ", "_")
-  metrikLabel <- c[["metricAxisLabel"]]
-  metrikLabel <- str_replace_all(metrikLabel, " ", "_")
+  groupingLabel <- stringr::str_replace_all(groupingLabel, " ", "_")
+  metricLabel <- c[["metricAxisLabel"]]
+  metricLabel <- stringr::str_replace_all(metricLabel, " ", "_")
   content <- c$chartValues
   content <- do.call(rbind.data.frame, content)
   content$X.type <- NULL
   names(content)[names(content) == "xAxis"] <- groupingLabel
-  names(content)[names(content) == "yAxis"] <- metrikLabel
+  names(content)[names(content) == "yAxis"] <- metricLabel
   return(content)
 }
+
