@@ -4,16 +4,10 @@
 #' 
 #' @export
 makeAuthorisationHeader <- function(applicationKey) {
-  
-  headerFields <- if (grepl('API-Key', applicationKey))  {
+  headerFields <-
     c(
       Authorization = applicationKey
     )
-  } else {
-    c(
-      Authorization = paste('API-Key', applicationKey)
-    )
-  }
   return(headerFields)
 }
 
@@ -24,11 +18,11 @@ makeAuthorisationHeader <- function(applicationKey) {
 #'
 #' @export
 handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
-  
-  res <- if (typeof(traceFilter) == 'character' ) 
+
+  res <- if (typeof(traceFilter) == 'character' )
     jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else
       traceFilter
-  
+
   return(
     rlist::list.filter(res, !(type %in% removeFilters) )
   )
@@ -40,7 +34,7 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
 #'
 #' @export
 buildValuesFrom <- function(aggrLevel) {
-  
+
   valuesFrom <- if (aggrLevel == "traces") {
     "allCases"
   } else if (aggrLevel == "events") {
@@ -57,7 +51,7 @@ buildValuesFrom <- function(aggrLevel) {
 #'
 #' @export
 buildTimeType <- function(timeAggregation) {
-  
+
   type <- if (timeAggregation == "dayOfWeek") {
     "byDayOfWeek"
   } else if (timeAggregation == "dayOfYear") {
@@ -76,7 +70,7 @@ buildTimeType <- function(timeAggregation) {
 #'
 #' @export
 buildRequestGrouping <- function(xDimension) {
-  
+
   grouping <- if (grepl("^byAttribute=", xDimension)) {
     list(
       attribute = gsub("^byAttribute=", "", xDimension),
@@ -104,7 +98,7 @@ buildRequestGrouping <- function(xDimension) {
 #'
 #' @export
 buildRequestMetric <- function(yDimension, aggregationFunction) {
-  
+
   metric <- if (grepl("^byAttribute=", yDimension)) {
     list(
       attribute = gsub("^byAttribute=", "", yDimension),
@@ -140,7 +134,7 @@ buildRequestMetric <- function(yDimension, aggregationFunction) {
       attribute = yDimension,
       type = "attribute",
       aggregationFunction = aggregationFunction
-    )    
+    )
   }
   return(metric)
 }
@@ -169,14 +163,14 @@ buildRequestMetric <- function(yDimension, aggregationFunction) {
 #' @param sortingOrder Sorting order of the aggregated values (optional, default = "descending", "ascending" / "descending")
 #' @return A data frame with the aggregated data
 
-aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", yDimension, zDimension = "null", 
+aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", yDimension, zDimension = "null",
                        aggrLevel = "traces", followers = "null",
-                       type = "aggregation", aggregationFunction = "sum", cache = "{}", maxValueAmount = 5, 
-                       activityExclusionFilter = "[]", traceFilterSequence="[]", 
+                       type = "aggregation", aggregationFunction = "sum", cache = "{}", maxValueAmount = 5,
+                       activityExclusionFilter = "[]", traceFilterSequence="[]",
                        limit = 10, page = 1, valueSorting = "caseCount",
                       sortingOrder = "descending") {
   headerFields <- makeAuthorisationHeader(lanaToken)
-  
+
   miningRequestData <- list(
     activityExclusionFilter = handleTraceFilterArgument(activityExclusionFilter),
     includeHeader = TRUE,
@@ -188,7 +182,7 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", y
     limit = limit,
     page = page
   )
-  
+
   requestData <- list(
     metric = buildRequestMetric(yDimension, aggregationFunction),
     valuesFrom = list(
@@ -205,36 +199,36 @@ aggregate <- function(lanaUrl, lanaToken, logId, xDimension = "noAggregation", y
 
   if (xDimension != "noAggregation") {
     requestData[["grouping"]] <- buildRequestGrouping(xDimension)
-  }  
-    
+  }
+
   if (zDimension != "null") {
     requestData[["secondaryGrouping"]] <- buildRequestGrouping(zDimension)
   }
-  
+
   r <- httr::POST(
     paste0("https://", lanaUrl, "/api/v2/aggregate-data"),
     body = list(request = jsonlite::toJSON(requestData, auto_unbox = TRUE)),
     encode = "multipart",
     httr::add_headers(headerFields)
   )
-  
+
   checkHttpErrors(r)
-  
+
   content <- jsonlite::fromJSON(httr::content(r, as = "text", encoding = "UTF-8"))
-  
+
   chartValues <- content$chartValues
-  
+
   if(zDimension != "null"){
     chartValues <- chartValues %>%
       tidyr::unnest(values, names_repair = "unique")
   }
-  
+
   names(chartValues)[names(chartValues) == "xAxis"] <- gsub(".*=", "", xDimension)
   names(chartValues)[names(chartValues) == "yAxis"] <- gsub(".*=", "", yDimension)
   names(chartValues)[names(chartValues) == "zAxis"] <- gsub(".*=", "", zDimension)
-  
+
   chartValues <- chartValues[, !names(chartValues) %in% c("$type","$type...1","$type...2")]
-  
+
   return(chartValues)
-  
+
 }
