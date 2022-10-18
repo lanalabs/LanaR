@@ -45,6 +45,6 @@ getUserId <- function(host, token) {
 getLogIdByName <- function(host, token, logName){
   
   userLogs <- lanar::getLogs(host, token)
-  logId <- max(userLogs[grepl(logName, userLogs$name, fixed=T), ]$id)
+  logId <- userLogs$id[grep(logName, userLogs$name)]
   return(logId)
 }
