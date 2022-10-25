@@ -28,6 +28,8 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
 }
 
 
+
+
 # Below attributes mostly do not change the result of the call
 #1. computeAttributecounts: If set to "true", the categorical attribute values are counted across the event log. Can lead to considerable processing overhead for data-sets with many distinct attribute values.
 #2. includeHeader: A flag used during export of data. If set to "true", the file will contain a header describing the function of each column in the CSV file.
@@ -59,12 +61,18 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
 #'
 #' @name discoveredModel
 
-discoveredModel <- function(lanaUrl, lanaToken, logId,...){
+discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...){
 
-  # Check the variables being tramsitted from LANA and receiving the user ID.
+   # converting tracefiltersequence to acceptable format
+  traceFilterSequence <-if (typeof(traceFilterSequence) == 'list' &  length(traceFilterSequence !=0))
+   handleTraceFilterArgument(traceFilter = list(traceFilterSequence)) else
+      handleTraceFilterArgument(traceFilter = traceFilterSequence)
 
 
-  rqBody <- append(list(logId = logId), list(...))
+  # Creating request body
+  rqBody <- append(list(logId = logId,
+                        traceFilterSequence = traceFilterSequence),
+                   list(...))
 
   discoveredModelRequestData <- httr::POST(
     paste0("https://", lanaUrl, "/api/v2/mining/discover-model"),
