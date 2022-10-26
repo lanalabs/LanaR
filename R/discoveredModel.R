@@ -30,7 +30,7 @@ handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
 
 
 
-# Below attributes mostly do not change the result of the call
+# Below attributes mostly do not change the result of the call when checked with testthat as well
 #1. computeAttributecounts: If set to "true", the categorical attribute values are counted across the event log. Can lead to considerable processing overhead for data-sets with many distinct attribute values.
 #2. includeHeader: A flag used during export of data. If set to "true", the file will contain a header describing the function of each column in the CSV file.
 #3. logName: Can be used to override the name of the event log inserted into the output CSV, for external control over the naming. Used in combination with the inlcudeLogID flag.
@@ -98,16 +98,69 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 #' @param discoveredModelData
 #' @name activityPerformance
 
-activityPerformance <- function(lanaUrl, lanaToken, logId){
+activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence){
 
-  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId)
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence)
 
   if(length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))
   }
 
-  actStats <- ldply(discoveredModelData$activityPerformanceStatistics, data.frame)
+  actStats <- as.data.frame(do.call(rbind, lapply(discoveredModelData$activityPerformanceStatistics, `length<-`,
+                                                  max(sapply(discoveredModelData$activityPerformanceStatistics, length)))))
 
   return(actStats)
 }
+
+
+
+#' @title Get Conformance Statistics
+#' @description Get different KPIs such as deviating activities, counts, frequency etc.,
+#' @return Conformance result as data frame
+#' @param discoveredModelData
+#' @name conformanceResult
+
+conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...){
+
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence,
+                                         modelID= list(...)$modelID, runConformance = list(...)$runConformance)
+
+  if(length(discoveredModelData) == 0) {
+    stop(paste0("The model is empty"))
+  }
+
+  conRes <- as.data.frame(do.call(rbind, lapply(discoveredModelData$conformanceResult, `length<-`,
+                                                  max(sapply(discoveredModelData$conformanceResult,length)))))
+
+  return(conRes)
+}
+
+
+#' @title Get Log Statistics
+#' @description Get different KPIs such as case, variant counts, frequency etc.,
+#' @return Log statistics as data frame
+#' @param discoveredModelData
+#' @name logStat
+
+logStat <- function(lanaUrl, lanaToken, logId, traceFilterSequence){
+
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence
+                                         )
+
+  if(length(discoveredModelData) == 0) {
+    stop(paste0("The model is empty"))
+  }
+
+  statList <- within(discoveredModelData$logStatistics, rm("numericAttributeRanges", "attributeCounts",
+                                                           "conformanceStatistics"))
+  logstat <- as.data.frame(do.call(rbind, lapply(statList, `length<-`,
+                                                  max(sapply(statList,length)))))
+  logstat <- setNames(cbind(rownames(logstat), logstat, row.names = NULL), c("Stats", "Values"))
+  rownames(logstat)<- logstat$Stats
+  logstat<- transpose(logstat)
+  colnames(logstat) <- logstat[1,]
+
+  return(logstat[-1,])
+}
+
 
