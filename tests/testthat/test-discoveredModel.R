@@ -1,85 +1,72 @@
 context("Test context for aggregation function")
 source("/Users/lanaguest/PycharmProjects/LanaR/LanaR/tests/testthat/config.R")
+library(jsonlite)
+library(tidyr)
+library(purrr)
+library(dplyr)
 
-#the expected data frames were generated with the old aggregate-function calling the /api/aggregatedData endpoint or via the LANA frontend
+filePath <- '/Users/lanaguest/PycharmProjects/LanaR/LanaR/test_responses/'
 
-test_that("Change in discoveredModel results when timestamp format changed", {
-  model_exp <- discoveredModel(logId = selectedLogId,
+#the expected model data is obtained from postman API calls
+
+test_that("Direct follower results", {
+  directFollowers_is <- discoveredModel(logId = selectedLogId,
                                lanaToken = lanaToken,
                                lanaUrl = lanaUrl,
-                               traceFilterSequence = list(),
-                               computeNumericAttributeRanges = TRUE
+                               traceFilterSequence = '[]'
+                              )$directFollowerStatistics$directFollowers %>% select_if(~sum(!is.na(.)) > 0)
+
+  directFollowers_exp <-  read_json(path = paste0(filePath,'response_1.json'))$directFollowerStatistics$directFollowers %>%
+                                  map_df(flatten) %>% unnest() %>% select_if(~sum(!is.na(.)) > 0)
+
+  testthat::expect_identical(directFollowers_exp, directFollowers_is)
+
+})
+
+test_that("Activity performance results", {
+  activityPerformanceStatistics_is <- discoveredModel(logId = selectedLogId,
+                               lanaToken = lanaToken,
+                               lanaUrl = lanaUrl,
+                               traceFilterSequence = '[]'
+                              )$activityPerformanceStatistics
+
+  activityPerformanceStatistics_exp <-  read_json(path = paste0(filePath,'response_1.json'))$activityPerformanceStatistics
+
+  testthat::expect_identical(activityPerformanceStatistics_exp, activityPerformanceStatistics_is)
+
+})
+
+test_that("Discovered model results", {
+  discoveredModel_is <- discoveredModel(logId = selectedLogId,
+                               lanaToken = lanaToken,
+                               lanaUrl = lanaUrl,
+                               traceFilterSequence = '[]', renderDiscoveredModel = TRUE
+                              )$discoveredModel
+
+  discoveredModel_exp <-  read_json(path = paste0(filePath,'response_model.json'))$discoveredModel
+
+  testthat::expect_identical(discoveredModel_exp, discoveredModel_is)
+
+})
+
+test_that("log statistics results", {
+  logstat_is <- logStat(logId = selectedLogId,
+                               lanaToken = lanaToken,
+                               lanaUrl = lanaUrl,
+                               traceFilterSequence = '[]'
                               )
 
-  model_is <- discoveredModel(logId = selectedLogId,
-                              lanaToken = lanaToken,
-                              lanaUrl = lanaUrl,
-                              traceFilterSequence = list(),
-                           computeNumericAttributeRanges = FALSE) # change in timestamp format
+  discoveredModelData <-  read_json(path = paste0(filePath,'response_model.json'))
+  statList <- within(discoveredModelData$logStatistics, rm("numericAttributeRanges", "attributeCounts",
+                                                           "conformanceStatistics"))
+  logstat_exp <- as.data.frame(do.call(rbind, lapply(statList, `length<-`,
+                                                  max(sapply(statList,length)))))
+  logstat_exp <- setNames(cbind(rownames(logstat_exp), logstat_exp, row.names = NULL), c("Stats", "Values"))
+  rownames(logstat_exp)<- logstat_exp$Stats
+  logstat_exp<- transpose(logstat_exp)
+  colnames(logstat_exp) <- logstat_exp[1,]
+  logstat_exp <- logstat_exp[-1,]
 
-  testthat::expect_identical(model_exp, model_is)
-
-})
-
-test_that("aggregations with numeric attribute metrics return the expected dataframe", {
-  df_aggregation <- aggregate(yDimension = "byAttribute=Cost",
-                              traceFilterSequence = "[]",
-                              lanaToken = lanaToken,
-                              lanaUrl = lanaUrl,
-                              logId = selectedLogId,
-                              aggregationFunction = "sum",
-                              aggrLevel = "traces")
-
-  caseCount <- c(2000)
-  noAggregation <- c("No grouping")
-  Cost <- c(8536000)
-
-  df_expected <- data.frame(caseCount, noAggregation, Cost, stringsAsFactors = FALSE) %>%
-    dplyr::mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
-
-  testthat::expect_identical(df_expected, df_aggregation)
-
-})
-
-test_that("aggregations with specified valueSorting and sortingOrder return the expected dataframe", {
-  df_aggregation <- aggregate(xDimension = "Classification",
-                              yDimension = "avgDuration",
-                              traceFilterSequence = "[]",
-                              lanaToken = lanaToken,
-                              lanaUrl = lanaUrl,
-                              logId = selectedLogId,
-                              aggrLevel = "allCases",
-                              valueSorting = "alphabetic",
-                              sortingOrder = "ascending")
-
-  caseCount <- c(109, 295, 57, 610, 929)
-  Classification <- c("Backup", "Citrix", "Intranet", "Mail", "SAP")
-  avgDuration <- c(23770458.715596333, 63067525.423728816, 22307368.421052627, 27052327.868852418, 49583186.221743822)
-
-  df_expected <- data.frame(caseCount, Classification, avgDuration, stringsAsFactors = FALSE) %>%
-    dplyr::mutate(caseCount = as.integer(caseCount))
-
-  testthat::expect_identical(df_expected, df_aggregation)
-
-})
-
-test_that("aggregations with a traceFilterSequence and maxValueAmount return the expected dataframe", {
-  df_aggregation <- aggregate(xDimension = "byTime=byHour",
-                              yDimension = "byAttribute=Cost",
-                              traceFilterSequence = '[{"pre":"Incident classification","succ":"Functional escalation","direct":false,"useDuration":false,"type":"followerFilter","inverted":false}]',
-                              maxValueAmount = 9,
-                              lanaToken = lanaToken,
-                              lanaUrl = lanaUrl,
-                              logId = selectedLogId,
-                              aggrLevel = "events")
-
-  caseCount <- c(1080, 978, 762, 368, 281, 142, 140, 139, 133, 1677)
-  byHour <- c("13", "12", "14", "11", "15", "23", "16", "6", "4", "Other")
-  Cost <- c(146000, 120000, 162000, 176000, 109000, 94000, 64000, 168000, 149000, 2223000)
-
-  df_expected <- data.frame(caseCount, byHour, Cost, stringsAsFactors = FALSE) %>%
-    dplyr::mutate(caseCount = as.integer(caseCount), Cost = as.integer(Cost))
-
-  testthat::expect_identical(df_expected, df_aggregation)
+  testthat::expect_identical(logstat_is, logstat_exp)
 
 })
