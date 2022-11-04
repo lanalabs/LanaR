@@ -1,33 +1,3 @@
-#' Make authorisation headers for lana api
-#' 
-#' @param applicationKey the application key with or without starting 'API-Key'
-#' 
-#' @export
-makeAuthorisationHeader <- function(applicationKey) {
-  headerFields <-
-    c(
-      Authorization = applicationKey
-    )
-  return(headerFields)
-}
-
-#' Programmatically remove filters from a trace filter sequence by type
-#' 
-#' @param traceFilter the trace filter as character or R list
-#' @param removeFilters filter types to remove
-#'
-#' @export
-handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
-
-  res <- if (typeof(traceFilter) == 'character' )
-    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else
-      traceFilter
-
-  return(
-    rlist::list.filter(res, !(type %in% removeFilters) )
-  )
-}
-
 #' Translates legacy aggregation levels 
 #' 
 #' @param aggrLevel the aggregation level
