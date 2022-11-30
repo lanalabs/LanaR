@@ -15,9 +15,11 @@ makeAuthorisationHeader <- function(applicationKey) {
 #' @export
 handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
   
+  #TODO: Warnings are shown when a traceFilterSequence list is passed
   res <- if (typeof(traceFilter) == 'character' )
-    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else
-      traceFilter
+    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else if 
+  (typeof(traceFilter) == 'list' & length(traceFilter != 0)) 
+        list(traceFilter) else traceFilter
   
   return(
     rlist::list.filter(res, !(type %in% removeFilters) )

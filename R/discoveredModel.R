@@ -15,19 +15,12 @@ library(data.table)
 #' @name discoveredModel
 
 discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
-  # converting tracefiltersequence to acceptable format
-  traceFilterSequence <- if (typeof(traceFilterSequence) == "list" & length(traceFilterSequence != 0)) {
-    handleTraceFilterArgument(traceFilter = list(traceFilterSequence))
-  } else {
-    handleTraceFilterArgument(traceFilter = traceFilterSequence)
-  }
-
 
   # Creating request body
   rqBody <- append(
     list(
       logId = logId,
-      traceFilterSequence = traceFilterSequence
+      traceFilterSequence = handleTraceFilterArgument(traceFilterSequence)
     ),
     list(...)
   )
@@ -61,16 +54,15 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
   if (length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))
   }
-
-  actStats <- as.data.frame(do.call(rbind, lapply(
-    discoveredModelData$activityPerformanceStatistics, `length<-`,
-    max(sapply(discoveredModelData$activityPerformanceStatistics, length))
-  )))
+  
+  actStats <- discoveredModelData$activityPerformanceStatistics %>%
+    do.call(rbind, .) %>%
+    as.data.frame
+    # TODO: Discarding empty rows doesn't work here
+    #select_if(~!all(is.na(.) | . == 0))
 
   return(actStats)
 }
-
-
 
 #' @title Get Conformance Statistics
 #' @description Get different KPIs such as deviating activities, counts, frequency etc.,
@@ -78,19 +70,12 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
 #' @param discoveredModelData
 #' @name conformanceResult
 
-conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
-  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence,
-    modelID = list(...)$modelID, runConformance = list(...)$runConformance
-  )
+conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
 
-  if (length(discoveredModelData) == 0) {
-    stop(paste0("The model is empty"))
-  }
-
-  conRes <- as.data.frame(do.call(rbind, lapply(
-    discoveredModelData$conformanceResult, `length<-`,
-    max(sapply(discoveredModelData$conformanceResult, length))
-  )))
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, runConformance = TRUE)
+  
+  conRes <- discoveredModelData$conformanceResult$activityDeviationCounts %>% 
+    select_if(~!all(is.na(.) | . == 0))
 
   return(conRes)
 }
@@ -100,27 +85,34 @@ conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ..
 #' @description Get different KPIs such as case, variant counts, frequency etc.,
 #' @return Log statistics as data frame
 #' @param discoveredModelData
-#' @name logStat
+#' @name logStatistics
 
-logStat <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
-  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence)
-
+logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
+  
   if (length(discoveredModelData) == 0) {
     stop(paste0("The model is empty"))
   }
-
-  statList <- within(discoveredModelData$logStatistics, rm(
+  
+  logStat <- discoveredModelData$logStatistics %>%
+    within(rm(
     "numericAttributeRanges", "attributeCounts",
-    "conformanceStatistics"
-  ))
-  logstat <- as.data.frame(do.call(rbind, lapply(
-    statList, `length<-`,
-    max(sapply(statList, length))
-  )))
-  logstat <- setNames(cbind(rownames(logstat), logstat, row.names = NULL), c("Stats", "Values"))
-  rownames(logstat) <- logstat$Stats
-  logstat <- transpose(logstat)
-  colnames(logstat) <- logstat[1, ]
+    "conformanceStatistics")) %>%
+    t() %>%
+    as.data.frame
+  
+  return(logStat)
+}
 
-  return(logstat[-1, ])
+#' @title Get direct followers
+#' @description Get data frame with the follower information
+#' @return Direct followers as data frame
+#' @name directFollowers
+
+directFollowers <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
+  discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
+  
+  directFollowersData <- discoveredModelData$directFollowerStatistics$directFollowers
+  
+  return(directFollowersData)
 }
