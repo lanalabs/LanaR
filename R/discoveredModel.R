@@ -4,8 +4,10 @@ library(data.table)
 #' @title Get discovered model data
 #' @description Get the discovered model data, which includes logId, modelId, logStatistics, variants and discoveredModels. \cr See https://api.lana-labs.com/#/routes/getDiscoveredModelWithFilter
 #' @return discovered model
-#' @param logName Full name of the uploaded csv file in Lana
-#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, use func. handleTraceFilterArgument to pass this argument when passed as a string or just an R nested list otherwise)
+#' @param logId Id of the uploaded csv file in Appian Process Mining
+#' @param lanaUrl URL of the Appian Process Mining instance being used
+#' @param lanaToken API Token of the user
+#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @param runConformance Decide whether you want to include conformance data with a R boolean value (optional)
 #' @param modelId Provide the ID of Target model for conformance checking (optional)
 #' @param edgeThreshold A value between 0.0 and 1.0 that guides the heuristic for edge removal from the discovered graph. Lower values mean that "unimportant" edges are removed from the generated graph. The heuristic aims to remove edges that have low frequency and which most likely correspond to parallel activities in the underlying process. Care is taken to not have dangling activities after removal of edges.
@@ -51,7 +53,10 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 #' @title Get activity performance statistics
 #' @description Get the activity performance statistics, which include activity durations and counts.
 #' @return activity performance statistics as data frame
-#' @param discoveredModelData
+#' @param logId Id of the uploaded csv file in Appian Process Mining
+#' @param lanaUrl URL of the Appian Process Mining instance being used
+#' @param lanaToken API Token of the user
+#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @name activityPerformance
 
 # TODO: Discard empty rows not working
@@ -76,7 +81,10 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
 #' @title Get Conformance Statistics
 #' @description Get different KPIs such as deviating activities, counts, frequency etc.,
 #' @return Conformance result as data frame
-#' @param discoveredModelData
+#' @param logId Id of the uploaded csv file in Appian Process Mining
+#' @param lanaUrl URL of the Appian Process Mining instance being used
+#' @param lanaToken API Token of the user
+#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @name conformanceResult
 
 conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
@@ -93,7 +101,10 @@ conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
 #' @title Get Log Statistics
 #' @description Get different KPIs such as case, variant counts, frequency etc.,
 #' @return Log statistics as data frame
-#' @param discoveredModelData
+#' @param logId Id of the uploaded csv file in Appian Process Mining
+#' @param lanaUrl URL of the Appian Process Mining instance being used
+#' @param lanaToken API Token of the user
+#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @name logStatistics
 
 logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
@@ -115,6 +126,10 @@ logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
 
 #' @title Get direct followers
 #' @description Get data frame with the follower information
+#' @param logId Id of the uploaded csv file in Appian Process Mining
+#' @param lanaUrl URL of the Appian Process Mining instance being used
+#' @param lanaToken API Token of the user
+#' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @return Direct followers as data frame
 #' @name directFollowers
 
