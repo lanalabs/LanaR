@@ -54,6 +54,7 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 #' @param discoveredModelData
 #' @name activityPerformance
 
+# TODO: Discard empty rows not working
 activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
   suppressWarnings({
   discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence)
@@ -66,7 +67,7 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
     do.call(rbind, .) %>%
     as.data.frame %>%
     tibble::rownames_to_column("Activity") %>%
-    select_if(~!all(is.na(.))) %>% discard(~all(is.na(.) | . ==""))
+    select_if(~!(all(is.na(.)) | all(. == "")))
 
   return(actStats)
   })

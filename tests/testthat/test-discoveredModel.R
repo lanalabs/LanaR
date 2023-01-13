@@ -36,7 +36,7 @@ test_that("Activity performance results", {
                                        do.call(rbind, .) %>%
                                         as.data.frame %>%
                                         tibble::rownames_to_column("Activity") %>%
-                                        select_if(~!all(is.na(.))) %>% discard(~all(is.na(.) | . ==""))
+                                        select_if(~!all(is.null(.)))
 
 
 
@@ -48,12 +48,12 @@ test_that("Discovered model results", {
   discoveredModel_is <- discoveredModel(logId = selectedLogId,
                                lanaToken = lanaToken,
                                lanaUrl = lanaUrl,
-                               traceFilterSequence = '[]', renderDiscoveredModel = TRUE
+                               traceFilterSequence = '[]', renderDiscoveredModel = TRUE, runConformance = TRUE
                               )$discoveredModel
 
   discoveredModel_exp <-  lanar::discoveredModel(lanaUrl, lanaToken, selectedLogId,
                                        traceFilterSequence = '[]',
-                                       runConformance ="true" )$discoveredModel
+                                       renderDiscoveredModel ="true" , runConformance = "true")$discoveredModel
 
   testthat::expect_equal(discoveredModel_exp, discoveredModel_is)
 
