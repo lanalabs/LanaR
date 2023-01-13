@@ -14,6 +14,7 @@ library(data.table)
 #' @param timestampFormatter Defines how the timestamps are exported to CSV. Can be set to value that is understood by Java's DateTimeFormatter
 #' @name discoveredModel
 
+# TODO: doesn't work wth multiple filteres together
 discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
 
   # Creating request body
@@ -42,6 +43,11 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
   return(discoveredModelData)
 }
 
+# Example of tracefilter sequences as R lists
+# Activity filter: list(type = "activityFilter", activity = "Activity name", inverted=TRUE/FALSE)
+# Numeric Attribute Filter: list(type = "numericAttributeFilter", attributeName = "{Attribute Name}", min= min value, max=18)
+
+
 #' @title Get activity performance statistics
 #' @description Get the activity performance statistics, which include activity durations and counts.
 #' @return activity performance statistics as data frame
@@ -49,6 +55,7 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 #' @name activityPerformance
 
 activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
+  suppressWarnings({
   discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence)
 
   if (length(discoveredModelData) == 0) {
@@ -57,11 +64,12 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
   
   actStats <- discoveredModelData$activityPerformanceStatistics %>%
     do.call(rbind, .) %>%
-    as.data.frame
-    # TODO: Discarding empty rows doesn't work here
-    #select_if(~!all(is.na(.) | . == 0))
+    as.data.frame %>%
+    tibble::rownames_to_column("Activity") %>%
+    select_if(~!all(is.na(.))) %>% discard(~all(is.na(.) | . ==""))
 
   return(actStats)
+  })
 }
 
 #' @title Get Conformance Statistics
@@ -71,13 +79,13 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
 #' @name conformanceResult
 
 conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
-
+  suppressWarnings({
   discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, runConformance = TRUE)
   
-  conRes <- discoveredModelData$conformanceResult$activityDeviationCounts %>% 
-    select_if(~!all(is.na(.) | . == 0))
+  conRes <- discoveredModelData$conformanceResult$activityDeviationCounts
 
   return(conRes)
+                   })
 }
 
 
@@ -112,7 +120,8 @@ logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
 directFollowers <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
   discoveredModelData <- discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
   
-  directFollowersData <- discoveredModelData$directFollowerStatistics$directFollowers
+  directFollowersData <- discoveredModelData$directFollowerStatistics$directFollowers %>%
+                          select_if(~sum(!is.na(.)) > 0)
   
   return(directFollowersData)
 }
