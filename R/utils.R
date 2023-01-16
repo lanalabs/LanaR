@@ -13,15 +13,40 @@ makeAuthorisationHeader <- function(applicationKey) {
 #' @param traceFilter the trace filter as character or R list
 #' @param removeFilters filter types to remove
 #' @export
-handleTraceFilterArgument <- function(traceFilter, removeFilters = list()) {
-  
-  #TODO: Warnings are shown when a traceFilterSequence list is passed
+
+
+handleTraceFilterArgument <- function(traceFilter) {
+
   res <- if (typeof(traceFilter) == 'character' )
-    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else if 
-  (typeof(traceFilter) == 'list' & length(unlist(traceFilter) != 0))
+    jsonlite::fromJSON(traceFilter, simplifyVector = FALSE) else if
+  (typeof(traceFilter) == 'list' & any( sapply(traceFilter,is.list) ) == FALSE)
         list(traceFilter) else traceFilter
-  
+
   return(
-    rlist::list.filter(res, !(type %in% removeFilters) )
+    res
   )
+}
+
+
+
+
+joinTFS <- function(tfsfix, tfsdyn, filterString){
+  tfsFromHere <- fromJSON(paste0(tfsfix))
+  tfsFromLanaDF <- fromJSON(paste0(tfsdyn))
+
+
+  if (NROW(tfsFromLanaDF)>0){
+    if ("attributeFilter" %in% tfsFromLanaDF$type){
+      tfsFromLanaDF <- tfsFromLanaDF[!tfsFromLanaDF$type == filterString,]
+    }
+  }
+
+  if (NROW(tfsFromLanaDF)>0){
+    tfs <- rbind.fill(tfsFromHere, tfsFromLanaDF)
+  } else {
+    tfs <- tfsFromHere
+  }
+
+  return(toJSON(tfs))
+
 }

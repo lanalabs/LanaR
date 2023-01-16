@@ -9,6 +9,7 @@ library(data.table)
 #' @param lanaToken API Token of the user
 #' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
 #' @param runConformance Decide whether you want to include conformance data with a R boolean value (optional)
+#' @param hideActivityFilter apply a filter to hide single or multiple activities from the discovered model. Should be passed as R list
 #' @param modelId Provide the ID of Target model for conformance checking (optional)
 #' @param edgeThreshold A value between 0.0 and 1.0 that guides the heuristic for edge removal from the discovered graph. Lower values mean that "unimportant" edges are removed from the generated graph. The heuristic aims to remove edges that have low frequency and which most likely correspond to parallel activities in the underlying process. Care is taken to not have dangling activities after removal of edges.
 #' @param includeHeader A flag used during export of data. If set to "true", the file will contain a header describing the function of each column in the CSV file.
@@ -16,7 +17,7 @@ library(data.table)
 #' @param timestampFormatter Defines how the timestamps are exported to CSV. Can be set to value that is understood by Java's DateTimeFormatter
 #' @name discoveredModel
 
-# TODO: doesn't work wth multiple filteres together
+
 discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
 
   # Creating request body
@@ -48,6 +49,7 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 # Example of tracefilter sequences as R lists
 # Activity filter: list(type = "activityFilter", activity = "Activity name", inverted=TRUE/FALSE)
 # Numeric Attribute Filter: list(type = "numericAttributeFilter", attributeName = "{Attribute Name}", min= min value, max=18)
+# hideActivityFilter = list(activities = list("list of activites"), inverted= TRUE/FALSE)
 
 
 #' @title Get activity performance statistics
@@ -57,6 +59,7 @@ discoveredModel <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 #' @param lanaUrl URL of the Appian Process Mining instance being used
 #' @param lanaToken API Token of the user
 #' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
+#' @param hideActivityFilter apply a filter to hide single or multiple activities from the discovered model. Should be passed as R list
 #' @name activityPerformance
 
 # TODO: Discard empty rows not working
@@ -85,6 +88,7 @@ activityPerformance <- function(lanaUrl, lanaToken, logId, traceFilterSequence) 
 #' @param lanaUrl URL of the Appian Process Mining instance being used
 #' @param lanaToken API Token of the user
 #' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
+#' @param hideActivityFilter apply a filter to hide single or multiple activities from the discovered model. Should be passed as R list
 #' @name conformanceResult
 
 conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
@@ -105,6 +109,7 @@ conformanceResult <- function(lanaUrl, lanaToken, logId, traceFilterSequence) {
 #' @param lanaUrl URL of the Appian Process Mining instance being used
 #' @param lanaToken API Token of the user
 #' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
+#' @param hideActivityFilter apply a filter to hide single or multiple activities from the discovered model. Should be passed as R list
 #' @name logStatistics
 
 logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
@@ -130,6 +135,7 @@ logStatistics <- function(lanaUrl, lanaToken, logId, traceFilterSequence, ...) {
 #' @param lanaUrl URL of the Appian Process Mining instance being used
 #' @param lanaToken API Token of the user
 #' @param traceFilterSequence Integrate any kind of filter from Appian Process Mining into your aggregation (optional, Can be passed as string as well as R list)
+#' @param hideActivityFilter apply a filter to hide single or multiple activities from the discovered model. Should be passed as R list
 #' @return Direct followers as data frame
 #' @name directFollowers
 
