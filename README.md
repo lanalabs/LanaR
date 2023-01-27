@@ -1,5 +1,5 @@
 # LanaR: API for Appian Process Mining
-This package provides an R API for [Appian Process Mining](https://appian.com/products/platform/process-mining.html). 
+This package provides an R API for [Appian Process Mining](https://appian.com/products/platform/process-mining.html).
 
 **Attention**: This package is still in alpha state. Functions and parameters may be renamed and changed at any time.
 
@@ -8,13 +8,6 @@ In order to use `lanar` you need to manually install the packages `xml2`, `plyr`
 
 # Usage
 First upload your event logs to your Lana software. Then enter the log name as a parameter to the different functions as they will use the last uploaded log of that name. Look also at the examples.
-
-## Download Sample Event Log
-downloads an example event log to your working directory
-
-```
-downloadExample()
-```
 
 ## A list with all your uploaded logs
 ```
@@ -37,14 +30,14 @@ discoveredModel("Incident_withImpactAttributes.csv")
 
 
 ## Discovered model function
-This function touches the discover model endpoint. It takes 4 mandatory input arguments as below;
-* **logId** (string): ID of the event log available in Appian process mining instance
-* **lanaUrl** (string): URL of the Process mining instance t be used
-* **lanaToken** (string): API key for the given instance. Key to be preceeded always with "API-Key"
-* **traceFilterSequence** (R list/string): R-list or a string which contains Process mining filters to subset the eventlog
+This function touches the discover model endpoint. It takes 4 mandatory input arguments as below:
+* **logId** (string): ID of the event log available in Appian Process Mining instance
+* **lanaUrl** (string): URL of the Process mining instance to be used
+* **lanaToken** (string): API key for the given instance. Key to be preceeded always with "API-Key "
+* **traceFilterSequence** (R list/string): R-list or a string which contains Process Mining filters to subset the eventlog
 
-Apart from the mandatory arguments; below optional arguments could also be passed.
-* **hideActivityFilter** (R list): A R list to hide a single or multiple Activities in the discovered model
+Apart from the mandatory arguments, below optional arguments could also be passed.
+* **hideActivityFilter** (R list): A R list to hide a single or multiple Activities for the specified log query
 * **edgeThreshold**: A value between 0.0 and 1.0 that guides the heuristic for edge removal from the discovered graph
 
 ```
@@ -54,17 +47,17 @@ discoveredModel(lanaUrl, lanaToken, logId, traceFilterSequence, ...)
 traceFilterSequence can be passed as below;
 * **R-list**
 ```
-Activity filter<- list(type = "activityFilter", activity = "{Activity name}", inverted={TRUE/FALSE})
+Activity filter <- list(type = "activityFilter", activity = "{Activity name}", inverted={TRUE/FALSE})
 
-Activity filter<- list(list(type = "activityFilter", activity = "{Activity name}", inverted={TRUE/FALSE}),
+Activity filter <- list(list(type = "activityFilter", activity = "{Activity name}", inverted={TRUE/FALSE}),
                         list(type = "activityFilter", activity = "{Activity name}", inverted={TRUE/FALSE}))
 ```
 * **string**
 ```
-Activity filter<- '[{"type":"activityFilter", "activity":"{Activity name}", "inverted":{"true"/"false"}]'
+Activity filter <- '[{"type":"activityFilter", "activity":"{Activity name}", "inverted":{"true"/"false"}]'
 ```
 
-hideActivity filter can be passed as below;
+hideActivity filter can be passed as below:
 
 ```
 hideActivity <- list(activities = list({"list of activites"}), inverted= {TRUE/FALSE})
@@ -88,7 +81,7 @@ Returns a table with all the activities in the discovered model with correspondi
 conformanceResult(lanaUrl, lanaToken, logId, traceFilterSequence)
 ```
 
-Returns a table with all the activities in the discovered model with conformance result information such as number of time an activity confirms, is skipped, inserted etc. with respect to the target model.
+Returns a table with all the activities in the discovered model with conformance result information such as number of time an activity conforms, is skipped, inserted etc. with respect to the target model.
 
 ### Log Statistics
 
@@ -96,7 +89,7 @@ Returns a table with all the activities in the discovered model with conformance
 logStatistics(lanaUrl, lanaToken, logId, traceFilterSequence)
 ```
 
-Returns a table with general log statistucs such as number of cases, variants, average case duration, median case durations, number of events etc.
+Returns a table with general log statistics such as number of cases, variants, average case duration, median case durations, number of events etc.
 
 ### Direct follower statistics
 
@@ -104,7 +97,7 @@ Returns a table with general log statistucs such as number of cases, variants, a
 directFollowers(lanaUrl, lanaToken, logId, traceFilterSequence)
 ```
 
-Returns a table with all direct follower pairs of events with corresponding info such as case counts, avergae duration etc.
+Returns a table with all direct follower pairs of events with corresponding info such as case counts, average duration etc.
 
 ## Activity Performance Statistics
 gives statistics about activities such as minimum/maximum duration, average/median/total duration, standard deviation and frequency.
@@ -156,7 +149,7 @@ aggregate(logName, xDimension, yDimension)
 
 If you are more experienced with Lana, you can insert any kind of filter that you use in Lana into your aggregation or discovered model functions, by simply adding a tracefilter sequence.
 
-##### TraceFilterSequence: 
+##### TraceFilterSequence:
 
 ###### Variant Filter
 
@@ -239,7 +232,3 @@ aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yD
 ```
 aggregate("Incident_withImpactAttributes.csv", xDimension = "byTime=byMonth", yDimension = "totalDuration", traceFilterSequence = [{"max":```max variants```,"min":```min variants```,"type":"variantSliderFilter"}, {"type":"attributeFilter","attributeName":"```attribute name```","values":["```first value```","```second value```"],"inverted":```false or true```}])
 ```
-
-
-
-
