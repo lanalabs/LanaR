@@ -1,7 +1,7 @@
 context("Test context for aggregation function")
 source("config.R")
 
-#the expected data frames were generated with the old aggregate-function calling the /api/aggregatedData endpoint or via the LANA frontend
+#the expected data frames were generated with the old aggregate-function calling the /api/aggregatedData endpoint or via the Appian Process Mining frontend
 
 test_that("aggregations with attribute and time groupings return the expected dataframe", {
   df_aggregation <- aggregate(xDimension = "byAttribute=Country",
